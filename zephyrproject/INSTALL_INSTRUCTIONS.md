@@ -24,7 +24,7 @@ once you have installed those dependancies and installed python3 / python3-venv 
 
 3. west zephyr-export
 
-4. pip install -r ~/zephyrproject/zephyr/scripts/requirements.txt
+4. pip install -r /zephyr/scripts/requirements.txt
 
 These steps setup west, which is the helper tool used to build zephyros projects, as well as install the zephyrOS code base.
 

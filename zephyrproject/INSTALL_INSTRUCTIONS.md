@@ -1,54 +1,80 @@
-## VisionLead embedded application
+# VisionLead Embedded Application
 
 This folder contains all code for both ZephyrOS and our application code. Application code is contained inside the *src* folder.
 
-The following sections describe how to install all required dependancies, and build the application.
+The following sections describe how to install all required dependencies, and build the application.
 
-### Installing dependancies
+# Installing Dependencies
 
 This is based on the following guide from the Zephyr Project [here](https://docs.zephyrproject.org/latest/develop/getting_started/index.html#).
-Follow the section for installing dependancies that can be found on that page for your respective operating system, and then install python3 virtual enviroment.
+Follow the section for installing dependencies that can be found on that page for your respective operating system, and then install python3 virtual environment.
 
-#### seting up west
-once you have installed those dependancies and installed python3 / python3-venv (virtual enviroment), perform the following steps from a cli that is in the zephyrproject folder.
+# Set Up Virtual Environment
+It is recommended to use a virtual environment to isolate your project's dependencies and avoid conflicts with other Python projects on your system.
 
-1. python3 -m venv .venv
+To setup and activate virtual environment with python, run the following script in a bash terminal.
 
-2. source .venv/bin/activate
+```sh
+python3 -m venv .venv 
+source .venv/bin/activate #(or .venv~/Scripts/activate)
+```
 
-3. pip install west
+## Set Up West
+Once all dependencies has been installed, run the following command line to set up West, which is the helper tool used to build zephyros projects, as well as install the zephyrOS code base.
 
-4. west init 
+```sh
+pip install west
+west init 
+west update 
+west zephyr-export
+pip install -r /zephyr/scripts/requirements.txt #(or west packages pip --install)
+```
 
-5. west update 
+## Set Up Zephyr SDK
 
-3. west zephyr-export
+From the same command line interface session as in the previous steps, cd into the *zephyr* folder, and run the following command
 
-4. pip install -r /zephyr/scripts/requirements.txt
+```sh
+west sdk install
+```
 
-These steps setup west, which is the helper tool used to build zephyros projects, as well as install the zephyrOS code base.
-
-#### setting up zephyr SDK
-
-from the same cli session as in the previous steps, cd into the *zephyr* folder, and run the following command
-
-1. west sdk install
-
-this will install the ZephyrOS SDK for your system. 
+This will install the ZephyrOS SDK for your system. 
 
 Once this is complete, you should be ready to build the projects
 
-### Building the application
+# Build and Program Application
 
-to build the application, open a cli to the zephyrproject folder, and run the following command
+to build the application, open a command line interface  to the *zephyrproject* folder, and run the following command
 
-1. west build -p always -b arduino_nano_33_ble src
+```sh
+west build -p always -b arduino_nano_33_ble src
+```
 
 this will create a *build* folder, which contains the build of the application. 
 
-### Flashing the application to device
+## Flashing the application to device
 
-This still needs to be tested, but we need a different version of *bossac* than what is used by zephyrOS by default. To get the arduino specific version, all we need to do is follow the steps outlined [here](https://docs.zephyrproject.org/latest/boards/arduino/nano_33_ble/doc/index.html) under programming and debugging, and then run the flash command using the path to your specific bossac file. In most linux systems, the path is $HOME/.arduino15/packages/arduino/tools/bossac/1.9.1-arduino2/bossac, so the flash command will look something like this
+To flash the Arduino board, a variant of *bossac* is needed. Please see details here.
 
-1. west flash --bossac=$HOME/.arduino15/packages/arduino/tools/bossac/1.9.1-arduino2/bossac
+  - For Windows systems, a compiled version of *bossac* has been added to the repository under *zephyrproject/*.
 
+Ensure the Arduino board is connected to the system via USB.
+
+ - For Windows system, you need to find the COM port the board is plugged into. This is OS depended and you can find it through many ways, for example, using PowerShell in Windows:
+
+    ```sh
+    Get-WmiObject Win32_SerialPort | Select-Object DeviceID, Description
+    ```
+
+Double click the RESET button on the arduino board (the only physical button on the devboard) then run the following command:
+
+```sh
+west flash --bossac="<path to the arduino version of bossac>"
+```
+  - For Windows system, the COM port is also required as an input   argument, for example
+    ```sh
+    west flash --bossac="<path to the arduino version of bossac>" --bossac-port="<COM port>"
+    
+    # Example, use the compiled bossac in the repo and COM port 6
+    west flash --bossac=\bossac.exe --bossac-port="COM6"
+    ```

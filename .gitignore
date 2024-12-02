@@ -1,3 +1,4 @@
+.vscode/*
 zephyrproject/.venv/*
 zephyrproject/.west/*
 zephyrproject/bootloader/*

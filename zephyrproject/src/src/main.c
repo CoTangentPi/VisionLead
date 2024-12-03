@@ -13,10 +13,11 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
+#include <ble.h>
+
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/logging/log.h>
-#include "ble/ble.h"
 
 LOG_MODULE_REGISTER(main);
 

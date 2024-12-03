@@ -5,6 +5,7 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(vision_lead)
 
 # Add the include directory
-target_include_directories(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ble)
+# target_include_directories(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ble)
+zephyr_include_directories(ble)
 
-target_sources(app PRIVATE src/main.c)
+target_sources(app PRIVATE src/main.c ble/ble.c)

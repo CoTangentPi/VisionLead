@@ -18,6 +18,12 @@
 #include <zephyr/bluetooth/uuid.h>
 #include <zephyr/bluetooth/services/bas.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/drivers/gpio.h>
+
+/* The devicetree node identifier for the "led0" alias. */
+#define LED0_NODE DT_ALIAS(led0)
+static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
+
 
 // Register a logging module named "ble"
 LOG_MODULE_REGISTER(ble);
@@ -36,11 +42,41 @@ static const struct bt_data adv_data[] = {
     // Note the device appearance is a little endian  16-bit value, so the two bytes are backwards
     BT_DATA_BYTES(BT_DATA_GAP_APPEARANCE, 0xC0, 0x03),
 
-    // Include a custom 128-bit service UUID
-    BT_DATA_BYTES(BT_DATA_UUID128_ALL, 
-                  0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0, 
-                  0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0),
+    // Set the UUID for alert notification service
+    BT_DATA_BYTES(BT_DATA_UUID16_ALL, 0x11, 0x18),
 };
+
+// Define the Alert Notification Service UUID
+static struct bt_uuid_16 alert_notification_service_uuid = BT_UUID_INIT_16(0x1811);
+
+// Define the Alert Notification Control Point Characteristic UUID
+static struct bt_uuid_16 alert_notification_control_point_uuid = BT_UUID_INIT_16(0x2A44);
+
+// Define a buffer to hold the characteristic value
+static uint8_t alert_notification_control_point[20];
+
+
+
+// Callback function to handle notifications
+static void notify_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr,
+                      const void *buf, uint16_t len, void *user_data)
+{
+    LOG_INF("Received notification from phone");
+    // Process the notification data
+
+    gpio_pin_toggle_dt(&led);
+    memcpy(alert_notification_control_point, buf, len);
+}
+
+// Define the characteristic with the notification callback
+static struct bt_gatt_attr alert_notification_attrs[] = {
+    BT_GATT_PRIMARY_SERVICE(&alert_notification_service_uuid),
+    BT_GATT_CHARACTERISTIC(&alert_notification_control_point_uuid.uuid, BT_GATT_CHRC_NOTIFY,
+                           BT_GATT_PERM_READ, NULL, notify_cb, alert_notification_control_point),
+};
+
+// Define the GATT service
+static struct bt_gatt_service alert_notification_service = BT_GATT_SERVICE(alert_notification_attrs);
 
 /*
  * Function to initialize BLE and start advertising
@@ -62,6 +98,9 @@ void ble_init(void)
         return;
     }
 
+    // Register the Alert Notification GATT service
+    bt_gatt_service_register(&alert_notification_service);
+
     LOG_INF("Bluetooth initialized"); 
 
     // Start BLE advertising with the specified advertising data
@@ -71,4 +110,6 @@ void ble_init(void)
         return;
     }
     LOG_INF("Advertising successfully started"); 
+
+
 }

@@ -40,8 +40,12 @@ void main(void)
 {
     LOG_INF("Starting main application");
 
+    ble_init();
+
     int ret;
-	bool led_state = true;
+    bool led_state = true;
+
+    while(true){
 
 	if (!gpio_is_ready_dt(&led)) {
 		return 0;
@@ -52,17 +56,17 @@ void main(void)
 		return 0;
 	}
 
-    ret = gpio_pin_toggle_dt(&led);
+	ret = gpio_pin_toggle_dt(&led);
 
-    led_state = !led_state;
-    printf("LED state: %s\n", led_state ? "ON" : "OFF");
-    k_msleep(500);
+	led_state = !led_state;
+	printf("LED state: %s\n", led_state ? "ON" : "OFF");
+	k_msleep(500);
 
-    ret = gpio_pin_toggle_dt(&led);
-    k_msleep(1000);
+	ret = gpio_pin_toggle_dt(&led);
+	k_msleep(1000);
 
-    ret = gpio_pin_toggle_dt(&led);
+	ret = gpio_pin_toggle_dt(&led);
+    } 
 
-    ble_init();
-
+    return 0;
 }

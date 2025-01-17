@@ -14,6 +14,7 @@
 */
 
 #include <ble.h>
+#include <gpio.h>
 
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
@@ -40,6 +41,7 @@ void main(void)
 {
     LOG_INF("Starting main application");
 
+    gpio_init();
     ble_init();
 
     int ret;

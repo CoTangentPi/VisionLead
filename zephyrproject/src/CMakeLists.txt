@@ -7,5 +7,6 @@ project(vision_lead)
 # Add the include directory
 # target_include_directories(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ble)
 zephyr_include_directories(ble)
+zephyr_include_directories(gpio)
 
 target_sources(app PRIVATE src/main.c ble/ble.c)

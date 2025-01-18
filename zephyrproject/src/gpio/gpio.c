@@ -7,7 +7,7 @@
 
 //Device tree node and name for gpio1
 #define GPIO_1_NODE DT_NODELABEL(gpio1)
-#define GPIO_1_NAME DEVICE_DT_NAME(GPIO_NODE)
+#define GPIO_1_NAME DEVICE_DT_NAME(GPIO_1_NODE)
 
 //pin numbers for D4, D5, D6
 #define GPIO_1_PIN_D4	15
@@ -50,13 +50,13 @@ int gpio_set_pin(PINS pin_to_set, int high_low){
     if(
 	high_low != 0 && high_low != 1
     ){
-	return GPIO_SET_PIN_ERROR;
+	return GPIO_PIN_SET_ERROR;
     }
 
     if(
 	pin_to_set != D4 && pin_to_set != D5 && pin_to_set != D6
     ){
-	return GPIO_SET_PIN_ERROR;
+	return GPIO_PIN_SET_ERROR;
     }
 
     //get device struct from device tree
@@ -77,7 +77,7 @@ int gpio_set_pin(PINS pin_to_set, int high_low){
     }
 
 
-    return GPIO_SET_PIN_SUCCESS;
+    return GPIO_PIN_SET_SUCCESS;
 
 }
 

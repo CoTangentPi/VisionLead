@@ -9,4 +9,4 @@ project(vision_lead)
 zephyr_include_directories(ble)
 zephyr_include_directories(gpio)
 
-target_sources(app PRIVATE src/main.c ble/ble.c)
+target_sources(app PRIVATE src/main.c ble/ble.c gpio/gpio.c)

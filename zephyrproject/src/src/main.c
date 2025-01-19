@@ -48,26 +48,17 @@ void main(void)
     bool led_state = true;
 
     while(true){
-
-	if (!gpio_is_ready_dt(&led)) {
-		return 0;
-	}
-
-	ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE);
-	if (ret < 0) {
-		return 0;
-	}
-
-	ret = gpio_pin_toggle_dt(&led);
-
+	
+	//set pin high to toggle off
+	ret = gpio_set_pin(BLUE_LED, 1);
 	led_state = !led_state;
 	printf("LED state: %s\n", led_state ? "ON" : "OFF");
 	k_msleep(500);
 
-	ret = gpio_pin_toggle_dt(&led);
+	//set pin low to toggle off
+	ret = gpio_set_pin(BLUE_LED, 0);
 	k_msleep(1000);
 
-	ret = gpio_pin_toggle_dt(&led);
     } 
 
     return 0;

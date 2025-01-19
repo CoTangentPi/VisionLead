@@ -16,7 +16,9 @@
 typedef enum {
     D4,
     D5, 
-    D6
+    D6,
+    RED_LED,
+    BLUE_LED
 } PINS;
 
 void gpio_init(void);

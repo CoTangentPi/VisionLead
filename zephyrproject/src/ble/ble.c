@@ -11,6 +11,9 @@
  *       Chachi Han <chachi.han@ucalgary.ca>	
  */
 
+
+#include <gpio.h>
+#include <zephyr.h>
 #include <zephyr/device.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/hci.h>
@@ -19,11 +22,6 @@
 #include <zephyr/bluetooth/services/bas.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/drivers/gpio.h>
-
-/* The devicetree node identifier for the "led0" alias. */
-#define LED0_NODE DT_ALIAS(led0)
-static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
-
 
 // Register a logging module named "ble"
 LOG_MODULE_REGISTER(ble);
@@ -64,7 +62,7 @@ static void notify_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr,
     LOG_INF("Received notification from phone");
     // Process the notification data
 
-    gpio_pin_toggle_dt(&led);
+    gpio_set_pin(RED_LED, 0);
     memcpy(alert_notification_control_point, buf, len);
 }
 

@@ -6,3 +6,4 @@ zephyrproject/build/*
 zephyrproject/modules/*
 zephyrproject/tools/*
 zephyrproject/zephyr
+zephyrproject/.cache

@@ -14,9 +14,9 @@
 #define GPIO_H 
 
 typedef enum {
-    D4,
-    D5, 
-    D6,
+    MOTOR_0,
+    MOTOR_1, 
+    BUZZER_0,
     RED_LED,
     BLUE_LED
 } PINS;

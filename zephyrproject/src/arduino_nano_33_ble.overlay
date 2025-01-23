@@ -1,0 +1,31 @@
+
+
+/ {
+    pins {
+	compatible = "gpio-keys";
+	    motor_0: motor_0 {
+		gpios = <&gpio1 12 GPIO_ACTIVE_HIGH>;
+		label = "motor 0";
+	    };
+	    motor_1: motor_1 {
+	       gpios = <&gpio1 15 GPIO_ACTIVE_HIGH>;
+	       label = "motor 1";
+	    };
+	    buzzer_0: buzzer_0 {
+		gpios = <&gpio1 13 GPIO_ACTIVE_HIGH>;
+		label = "buzzer 0";
+	    };
+    };
+
+    leds {
+	compatible = "gpio-leds";
+	    red_led: red_led {
+		    gpios = <&gpio0 24 GPIO_ACTIVE_LOW>;
+		    label = "Red LED";
+	    };
+	    blue_led: blue_led {
+		    gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
+		    label = "Blue LED";
+	    };
+    };
+};

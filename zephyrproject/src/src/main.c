@@ -22,7 +22,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 
-LOG_MODULE_REGISTER(main);
+LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 
 
 /* 1000 msec = 1 sec */
@@ -39,7 +39,7 @@ static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 
 void main(void)
 {
-    LOG_INF("Starting main application");
+    //LOG_INF("Starting main application");
 
     gpio_init();
     ble_init();
@@ -52,7 +52,8 @@ void main(void)
 	//set pin high to toggle off
 	ret = gpio_set_pin(BLUE_LED, 1);
 	led_state = !led_state;
-	printf("LED state: %s\n", led_state ? "ON" : "OFF");
+	LOG_INF("TESTING");
+	printk("LED state: %s\n", led_state ? "ON" : "OFF");
 	k_msleep(500);
 
 	//set pin low to toggle off

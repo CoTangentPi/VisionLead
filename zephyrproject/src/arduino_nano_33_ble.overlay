@@ -1,5 +1,3 @@
-
-
 / {
     pins {
 	compatible = "gpio-keys";
@@ -29,3 +27,5 @@
 	    };
     };
 };
+
+

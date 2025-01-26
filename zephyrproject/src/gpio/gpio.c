@@ -4,21 +4,13 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>
-
-//Device tree node and name for gpio1
-#define GPIO_1_NODE DT_NODELABEL(gpio1)
-#define GPIO_1_NAME DEVICE_DT_NAME(GPIO_1_NODE)
-
-//Device tree node and name for gpio0
-#define GPIO_0_NODE DT_NODELABEL(gpio0)
-#define GPIO_0_NAME DEVICE_DT_NAME(GPIO_0_NODE)
-
-//pin numbers for D4, D5, D6
-#define GPIO_1_PIN_D4	15
-#define GPIO_1_PIN_D5	13
-#define GPIO_1_PIN_D6	14
-#define GPIO_0_PIN_LED_RED 24
-#define GPIO_0_PIN_LED_BLUE 6
+ 
+//get motor 0, motor 1, and buzzer 0 devices from device tree
+const static struct gpio_dt_spec motor_0 = GPIO_DT_SPEC_GET(DT_NODELABEL(motor_0), gpios);
+const static struct gpio_dt_spec motor_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(motor_1), gpios);
+const static struct gpio_dt_spec buzzer_0 = GPIO_DT_SPEC_GET(DT_NODELABEL(motor_1), gpios);
+const static struct gpio_dt_spec red_led = GPIO_DT_SPEC_GET(DT_NODELABEL(red_led), gpios);
+const static struct gpio_dt_spec blue_led = GPIO_DT_SPEC_GET(DT_NODELABEL(blue_led), gpios);
 
 //error states
 #define GPIO_PIN_SET_ERROR -1
@@ -33,24 +25,16 @@
 */
 void gpio_init(){
     
-    //get device struct from device tree for gpio0
-    const struct device * gpio_0_device = device_get_binding(GPIO_0_NAME); 
-
-    //get device struct from device tree for gpio1
-    const struct device * gpio_1_device = device_get_binding(GPIO_1_NAME);
-
     //configure pins D4, D5, and D6 as output
-    gpio_pin_configure(gpio_1_device, GPIO_1_PIN_D4, GPIO_OUTPUT);
-    gpio_pin_configure(gpio_1_device, GPIO_1_PIN_D5, GPIO_OUTPUT);
-    gpio_pin_configure(gpio_1_device, GPIO_1_PIN_D6, GPIO_OUTPUT);
+    gpio_pin_configure_dt(&motor_0, GPIO_OUTPUT);
+    gpio_pin_configure_dt(&motor_1, GPIO_OUTPUT);
+    gpio_pin_configure_dt(&buzzer_0, GPIO_OUTPUT);
+    gpio_pin_configure_dt(&red_led, GPIO_OUTPUT);
+    gpio_pin_configure_dt(&blue_led, GPIO_OUTPUT);
 
-    //configure RED_LED (led0) and BLUE_LED (led1) as output
-    gpio_pin_configure(gpio_0_device, GPIO_0_PIN_LED_RED, GPIO_OUTPUT);
-    gpio_pin_configure(gpio_0_device, GPIO_0_PIN_LED_BLUE, GPIO_OUTPUT);
-
-    //set leds to high (off)
-    gpio_pin_set(gpio_0_device, GPIO_0_PIN_LED_BLUE, 1);
-    gpio_pin_set(gpio_0_device, GPIO_0_PIN_LED_RED, 1);
+    //set leds to off
+    gpio_pin_set_dt(&red_led, 0);
+    gpio_pin_set_dt(&blue_led, 0);
 
     //done
 }
@@ -71,38 +55,32 @@ int gpio_set_pin(PINS pin_to_set, int high_low){
     }
 
     if(
-	pin_to_set != D4 && 
-	pin_to_set != D5 && 
-	pin_to_set != D6 &&
+	pin_to_set != MOTOR_0 && 
+	pin_to_set != MOTOR_1 && 
+	pin_to_set != BUZZER_0 &&
 	pin_to_set != RED_LED &&
 	pin_to_set != BLUE_LED
     ){
 	return GPIO_PIN_SET_ERROR;
     }
 
-    //get device struct from device tree
-    const struct device * gpio_1_device = device_get_binding(GPIO_1_NAME);
-
-    //get device struct from device tree for gpio0
-    const struct device * gpio_0_device = device_get_binding(GPIO_0_NAME); 
-
     //inputs are valid, set pin
     switch(pin_to_set){
 	
-	case D4:
-	    gpio_pin_set(gpio_1_device, GPIO_1_PIN_D4, high_low);
+	case MOTOR_0:
+	    gpio_pin_set_dt(&motor_0, high_low);
 	    break;
-	case D5:
-	    gpio_pin_set(gpio_1_device, GPIO_1_PIN_D5, high_low);
+	case MOTOR_1:
+	    gpio_pin_set_dt(&motor_1, high_low);
 	    break;
-	case D6:
-	    gpio_pin_set(gpio_1_device, GPIO_1_PIN_D5, high_low);
+	case BUZZER_0:
+	    gpio_pin_set_dt(&buzzer_0, high_low);
 	    break;   
 	case RED_LED:
-	    gpio_pin_set(gpio_0_device, GPIO_0_PIN_LED_RED, high_low);
+	    gpio_pin_set_dt(&red_led, high_low);
 	    break;
 	case BLUE_LED:
-	    gpio_pin_set(gpio_0_device, GPIO_0_PIN_LED_BLUE, high_low);
+	    gpio_pin_set_dt(&blue_led, high_low);
 	    break;
     }
 

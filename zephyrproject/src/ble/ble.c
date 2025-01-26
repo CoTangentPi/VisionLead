@@ -11,9 +11,7 @@
  *       Chachi Han <chachi.han@ucalgary.ca>	
  */
 
-
-#include <gpio.h>
-#include <zephyr.h>
+#include "zephyr/logging/log_core.h"
 #include <zephyr/device.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/hci.h>
@@ -24,7 +22,7 @@
 #include <zephyr/drivers/gpio.h>
 
 // Register a logging module named "ble"
-LOG_MODULE_REGISTER(ble);
+LOG_MODULE_REGISTER(ble, LOG_LEVEL_DBG);
 
 // Advertising data to be sent during BLE advertising
 static const struct bt_data adv_data[] = {

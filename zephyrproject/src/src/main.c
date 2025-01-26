@@ -1,12 +1,29 @@
-/*
- * Copyright (c) 2016 Intel Corporation
+ /*
+ * VisionLead Embedded Application
  *
- * SPDX-License-Identifier: Apache-2.0
+ * This file contains the main entry point for the VisionLead.
+ *
+ * Copyright 2024 University of Calgary and Garmin International Inc.
+ *
+ * Author: 
+ *       Chachi Han <chachi.han@ucalgary.ca>	
  */
 
-#include <stdio.h>
+/*
+ * SPDX-License-Identifier: Apache-2.0
+*/
+
+#include <ble.h>
+#include <gpio.h>
+
+#include <zephyr/device.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
+
+LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
+
 
 /* 1000 msec = 1 sec */
 #define SLEEP_TIME_MS   1000
@@ -20,29 +37,30 @@
  */
 static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 
-int main(void)
+void main(void)
 {
-	int ret;
-	bool led_state = true;
+    //LOG_INF("Starting main application");
 
-	if (!gpio_is_ready_dt(&led)) {
-		return 0;
-	}
+    gpio_init();
+    ble_init();
 
-	ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE);
-	if (ret < 0) {
-		return 0;
-	}
+    int ret;
+    bool led_state = true;
 
-	while (1) {
-		ret = gpio_pin_toggle_dt(&led);
-		if (ret < 0) {
-			return 0;
-		}
+    while(true){
+	
+	//set pin high to toggle off
+	ret = gpio_set_pin(BLUE_LED, 1);
+	led_state = !led_state;
+	LOG_INF("TESTING");
+	printk("LED state: %s\n", led_state ? "ON" : "OFF");
+	k_msleep(500);
 
-		led_state = !led_state;
-		printf("LED state: %s\n", led_state ? "ON" : "OFF");
-		k_msleep(SLEEP_TIME_MS);
-	}
-	return 0;
+	//set pin low to toggle off
+	ret = gpio_set_pin(BLUE_LED, 0);
+	k_msleep(1000);
+
+    } 
+
+    return 0;
 }

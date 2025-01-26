@@ -47,7 +47,7 @@ Once this is complete, you should be ready to build the projects
 to build the application, open a command line interface  to the *zephyrproject* folder, and run the following command
 
 ```sh
-west build -p always -b arduino_nano_33_ble src
+west build -S cdc-acm-console -p always -b arduino_nano_33_ble src
 ```
 
 this will create a *build* folder, which contains the build of the application. 
@@ -78,3 +78,18 @@ west flash --bossac="<path to the arduino version of bossac>"
     # Example, use the compiled bossac in the repo and COM port 6
     west flash --bossac=\bossac.exe --bossac-port="COM6"
     ```
+  - For linux, this com port is not required
+  ```sh
+    west flash --bossac=$HOME/.arduino15/packages/arduino/tools/bossac/1.9.1-arduino2/bossac
+  ```
+
+
+## Monitoring console output
+
+ - logging messages are available over the usb connection using the same COM port used for programming. These messages can be viewed on the host computer using any uart console. 
+
+ - On linux, this can be done simply using the minicom program
+
+ ```sh
+    minicom -D /dev/ttyACM0
+ ```

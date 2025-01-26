@@ -86,10 +86,11 @@ west flash --bossac="<path to the arduino version of bossac>"
 
 ## Monitoring console output
 
- - logging messages are available over the usb connection using the same COM port used for programming. These messages can be viewed on the host computer using any uart console. 
+ - Logging messages are available over the usb connection using the same COM port used for programming. These messages can be viewed on the host computer using any uart console. 
 
  - On linux, this can be done simply using the minicom program
 
  ```sh
     minicom -D /dev/ttyACM0
  ```
+ - Once in Minicom windows, press CTRL-A to open menu, and press X to exit Minicom

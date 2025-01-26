@@ -11,6 +11,7 @@
  *       Chachi Han <chachi.han@ucalgary.ca>	
  */
 
+#include <gpio.h>
 #include "zephyr/logging/log_core.h"
 #include <zephyr/device.h>
 #include <zephyr/bluetooth/bluetooth.h>
@@ -24,7 +25,9 @@
 // Register a logging module named "ble"
 LOG_MODULE_REGISTER(ble, LOG_LEVEL_DBG);
 
-// Advertising data to be sent during BLE advertising
+//=======================================================================
+// Define Advertising data to be sent during BLE advertising
+//=======================================================================
 static const struct bt_data adv_data[] = {
 
     // Set the flags to indicate device is in general discoverable mode 
@@ -34,15 +37,17 @@ static const struct bt_data adv_data[] = {
     // Set device name and length
     BT_DATA(BT_DATA_NAME_COMPLETE, "Vision Lead", 11),
 
-    // Set the appearance of the device to Human Interface Device (HID)
-    // Note the device appearance is a little endian  16-bit value, so the two bytes are backwards
-    BT_DATA_BYTES(BT_DATA_GAP_APPEARANCE, 0xC0, 0x03),
+    // // Set the appearance of the device to Human Interface Device (HID)
+    // // Note the device appearance is a little endian  16-bit value, so the two bytes are backwards
+    // BT_DATA_BYTES(BT_DATA_GAP_APPEARANCE, 0xC0, 0x03),
 
     // Set the UUID for alert notification service
     BT_DATA_BYTES(BT_DATA_UUID16_ALL, 0x11, 0x18),
 };
 
+//=======================================================================
 // Define the Alert Notification Service UUID
+//=======================================================================
 static struct bt_uuid_16 alert_notification_service_uuid = BT_UUID_INIT_16(0x1811);
 
 // Define the Alert Notification Control Point Characteristic UUID
@@ -74,6 +79,39 @@ static struct bt_gatt_attr alert_notification_attrs[] = {
 // Define the GATT service
 static struct bt_gatt_service alert_notification_service = BT_GATT_SERVICE(alert_notification_attrs);
 
+//=======================================================================
+// Define the connection callback functions
+//=======================================================================
+static void connected(struct bt_conn *conn, uint8_t err)
+{
+    // Write ble connection status to the log
+    if (err) {
+        LOG_ERR("Connection failed (err %u)", err);
+    } else {
+        LOG_INF("Connected");
+    }
+    // Turn on the blue LED to indicate connection
+    gpio_set_pin(BLUE_LED, 1);
+}
+
+static void disconnected(struct bt_conn *conn, uint8_t reason)
+{
+    // Write ble disconnection status to the log
+    LOG_INF("Disconnected (reason %u)", reason);
+
+    // Turn off the blue LED to indicate disconnection
+    gpio_set_pin(BLUE_LED, 0);
+}
+
+// Define the connection callback structure
+static struct bt_conn_cb conn_callbacks = {
+    .connected = connected,
+    .disconnected = disconnected,
+};
+
+//=======================================================================
+// BLE Initialization funciton
+//=======================================================================
 /*
  * Function to initialize BLE and start advertising
  *
@@ -96,6 +134,9 @@ void ble_init(void)
 
     // Register the Alert Notification GATT service
     bt_gatt_service_register(&alert_notification_service);
+
+    // Register connection callbacks
+    bt_conn_cb_register(&conn_callbacks);
 
     LOG_INF("Bluetooth initialized"); 
 

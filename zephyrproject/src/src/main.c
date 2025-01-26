@@ -41,25 +41,13 @@ void main(void)
 {
     //LOG_INF("Starting main application");
 
+	LOG_INF("Begain GPIO and BLE initialization");
+
     gpio_init();
     ble_init();
 
-	// Turn on blue LED
-	gpio_set_pin(BLUE_LED, 0);
-
     while(true){
-	
-	//set pin high to toggle off
-	ret = gpio_set_pin(BLUE_LED, 1);
-	led_state = !led_state;
-	LOG_INF("TESTING");
-	printk("LED state: %s\n", led_state ? "ON" : "OFF");
-	k_msleep(500);
-
-	//set pin low to toggle off
-	ret = gpio_set_pin(BLUE_LED, 0);
-	k_msleep(1000);
-
+		k_msleep(1000);
     } 
 
     return 0;

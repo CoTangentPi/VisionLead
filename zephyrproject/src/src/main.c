@@ -24,10 +24,6 @@
 
 LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 
-
-/* 1000 msec = 1 sec */
-#define SLEEP_TIME_MS   1000
-
 /* The devicetree node identifier for the "led0" alias. */
 #define LED0_NODE DT_ALIAS(led0)
 
@@ -41,25 +37,13 @@ void main(void)
 {
     //LOG_INF("Starting main application");
 
+	LOG_INF("Begain GPIO and BLE initialization");
+
     gpio_init();
     ble_init();
 
-    int ret;
-    bool led_state = true;
-
     while(true){
-	
-	//set pin high to toggle off
-	ret = gpio_set_pin(BLUE_LED, 1);
-	led_state = !led_state;
-	LOG_INF("TESTING");
-	printk("LED state: %s\n", led_state ? "ON" : "OFF");
-	k_msleep(500);
-
-	//set pin low to toggle off
-	ret = gpio_set_pin(BLUE_LED, 0);
-	k_msleep(1000);
-
+		  k_msleep(1000);
     } 
 
     return 0;

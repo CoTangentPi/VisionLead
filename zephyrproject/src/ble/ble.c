@@ -11,6 +11,7 @@
  *       Chachi Han <chachi.han@ucalgary.ca>	
  */
 
+#include <gpio.h>
 #include "zephyr/logging/log_core.h"
 #include <zephyr/device.h>
 #include <zephyr/bluetooth/bluetooth.h>
@@ -21,15 +22,12 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/drivers/gpio.h>
 
-/* The devicetree node identifier for the "led0" alias. */
-#define LED0_NODE DT_ALIAS(led0)
-static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
-
-
 // Register a logging module named "ble"
 LOG_MODULE_REGISTER(ble, LOG_LEVEL_DBG);
 
-// Advertising data to be sent during BLE advertising
+//=======================================================================
+// Define Advertising data to be sent during BLE advertising
+//=======================================================================
 static const struct bt_data adv_data[] = {
 
     // Set the flags to indicate device is in general discoverable mode 
@@ -39,46 +37,92 @@ static const struct bt_data adv_data[] = {
     // Set device name and length
     BT_DATA(BT_DATA_NAME_COMPLETE, "Vision Lead", 11),
 
-    // Set the appearance of the device to Human Interface Device (HID)
-    // Note the device appearance is a little endian  16-bit value, so the two bytes are backwards
-    BT_DATA_BYTES(BT_DATA_GAP_APPEARANCE, 0xC0, 0x03),
+    // // Set the appearance of the device to Human Interface Device (HID)
+    // // Note the device appearance is a little endian  16-bit value, so the two bytes are backwards
+    // BT_DATA_BYTES(BT_DATA_GAP_APPEARANCE, 0xC0, 0x03),
 
     // Set the UUID for alert notification service
     BT_DATA_BYTES(BT_DATA_UUID16_ALL, 0x11, 0x18),
 };
 
+//=======================================================================
 // Define the Alert Notification Service UUID
-static struct bt_uuid_16 alert_notification_service_uuid = BT_UUID_INIT_16(0x1811);
+//=======================================================================
+/* UUIDs for the service and characteristics */
+static struct bt_uuid_128 my_service_uuid = BT_UUID_INIT_128(
+    BT_UUID_128_ENCODE(0xCB94A5B0, 0x1046, 0xB287, 0xD82E, 0x19CE7CA6001B));
+    // BT_UUID_128_ENCODE(0x12345678, 0x1234, 0x1234, 0x1234, 0x123456789abc));
 
-// Define the Alert Notification Control Point Characteristic UUID
-static struct bt_uuid_16 alert_notification_control_point_uuid = BT_UUID_INIT_16(0x2A44);
+static struct bt_uuid_128 char_uuid = BT_UUID_INIT_128(
+    BT_UUID_128_ENCODE(0xFDE3A192, 0x8B1E, 0x9CE6, 0xC409, 0x3626A6E17310));
+    // BT_UUID_128_ENCODE(0xabcdef01, 0x1234, 0x1234, 0x1234, 0x123456789abc));
 
-// Define a buffer to hold the characteristic value
-static uint8_t alert_notification_control_point[20];
+/* Buffers for characteristic data */
+#define MAX_DATA_LEN 20
+static char rx_buffer[MAX_DATA_LEN + 1]; // Writable characteristic
 
+/* Callback for writable characteristic (char) */
+static ssize_t write_callback(struct bt_conn *conn,
+                              const struct bt_gatt_attr *attr,
+                              const void *buf,
+                              uint16_t len,
+                              uint16_t offset,
+                              uint8_t flags) {
+    if (len >= MAX_DATA_LEN) {
+        printk("Received data is too large, truncating to %d bytes\n", MAX_DATA_LEN);
+        len = MAX_DATA_LEN - 1;
+    }
 
+    memset(rx_buffer, 0, sizeof(rx_buffer));
+    memcpy(rx_buffer, buf, len);
+    rx_buffer[len] = '\0';
 
-// Callback function to handle notifications
-static void notify_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr,
-                      const void *buf, uint16_t len, void *user_data)
-{
-    LOG_INF("Received notification from phone");
-    // Process the notification data
-
-    gpio_pin_toggle_dt(&led);
-    memcpy(alert_notification_control_point, buf, len);
+    LOG_INF("Data received: %s\n", rx_buffer);
+    return len;
 }
 
-// Define the characteristic with the notification callback
-static struct bt_gatt_attr alert_notification_attrs[] = {
-    BT_GATT_PRIMARY_SERVICE(&alert_notification_service_uuid),
-    BT_GATT_CHARACTERISTIC(&alert_notification_control_point_uuid.uuid, BT_GATT_CHRC_NOTIFY,
-                           BT_GATT_PERM_READ, NULL, notify_cb, alert_notification_control_point),
+/* GATT service declaration with two characteristics */
+BT_GATT_SERVICE_DEFINE(my_service,
+    BT_GATT_PRIMARY_SERVICE(&my_service_uuid),
+    BT_GATT_CHARACTERISTIC(&char_uuid.uuid,
+                           BT_GATT_CHRC_WRITE_WITHOUT_RESP,
+                           BT_GATT_PERM_WRITE,
+                           NULL, write_callback, rx_buffer),
+);
+
+//=======================================================================
+// Define the connection callback functions
+//=======================================================================
+static void connected(struct bt_conn *conn, uint8_t err)
+{
+    // Write ble connection status to the log
+    if (err) {
+        LOG_ERR("Connection failed (err %u)", err);
+    } else {
+        LOG_INF("Connected");
+    }
+    // Turn on the blue LED to indicate connection
+    gpio_set_pin(BLUE_LED, 1);
+}
+
+static void disconnected(struct bt_conn *conn, uint8_t reason)
+{
+    // Write ble disconnection status to the log
+    LOG_INF("Disconnected (reason %u)", reason);
+
+    // Turn off the blue LED to indicate disconnection
+    gpio_set_pin(BLUE_LED, 0);
+}
+
+// Define the connection callback structure
+static struct bt_conn_cb conn_callbacks = {
+    .connected = connected,
+    .disconnected = disconnected,
 };
 
-// Define the GATT service
-static struct bt_gatt_service alert_notification_service = BT_GATT_SERVICE(alert_notification_attrs);
-
+//=======================================================================
+// BLE Initialization funciton
+//=======================================================================
 /*
  * Function to initialize BLE and start advertising
  *
@@ -99,8 +143,8 @@ void ble_init(void)
         return;
     }
 
-    // Register the Alert Notification GATT service
-    bt_gatt_service_register(&alert_notification_service);
+    // Register connection callbacks
+    bt_conn_cb_register(&conn_callbacks);
 
     LOG_INF("Bluetooth initialized"); 
 
@@ -111,6 +155,4 @@ void ble_init(void)
         return;
     }
     LOG_INF("Advertising successfully started"); 
-
-
 }

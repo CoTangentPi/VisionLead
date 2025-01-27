@@ -48,36 +48,47 @@ static const struct bt_data adv_data[] = {
 //=======================================================================
 // Define the Alert Notification Service UUID
 //=======================================================================
-static struct bt_uuid_16 alert_notification_service_uuid = BT_UUID_INIT_16(0x1811);
+/* UUIDs for the service and characteristics */
+static struct bt_uuid_128 my_service_uuid = BT_UUID_INIT_128(
+    BT_UUID_128_ENCODE(0xCB94A5B0, 0x1046, 0xB287, 0xD82E, 0x19CE7CA6001B));
+    // BT_UUID_128_ENCODE(0x12345678, 0x1234, 0x1234, 0x1234, 0x123456789abc));
 
-// Define the Alert Notification Control Point Characteristic UUID
-static struct bt_uuid_16 alert_notification_control_point_uuid = BT_UUID_INIT_16(0x2A44);
+static struct bt_uuid_128 char_uuid = BT_UUID_INIT_128(
+    BT_UUID_128_ENCODE(0xFDE3A192, 0x8B1E, 0x9CE6, 0xC409, 0x3626A6E17310));
+    // BT_UUID_128_ENCODE(0xabcdef01, 0x1234, 0x1234, 0x1234, 0x123456789abc));
 
-// Define a buffer to hold the characteristic value
-static uint8_t alert_notification_control_point[20];
+/* Buffers for characteristic data */
+#define MAX_DATA_LEN 20
+static char rx_buffer[MAX_DATA_LEN + 1]; // Writable characteristic
 
+/* Callback for writable characteristic (char) */
+static ssize_t write_callback(struct bt_conn *conn,
+                              const struct bt_gatt_attr *attr,
+                              const void *buf,
+                              uint16_t len,
+                              uint16_t offset,
+                              uint8_t flags) {
+    if (len >= MAX_DATA_LEN) {
+        printk("Received data is too large, truncating to %d bytes\n", MAX_DATA_LEN);
+        len = MAX_DATA_LEN - 1;
+    }
 
+    memset(rx_buffer, 0, sizeof(rx_buffer));
+    memcpy(rx_buffer, buf, len);
+    rx_buffer[len] = '\0';
 
-// Callback function to handle notifications
-static void notify_cb(struct bt_conn *conn, const struct bt_gatt_attr *attr,
-                      const void *buf, uint16_t len, void *user_data)
-{
-    LOG_INF("Received notification from phone");
-    // Process the notification data
-
-    gpio_set_pin(RED_LED, 0);
-    memcpy(alert_notification_control_point, buf, len);
+    LOG_INF("Data received: %s\n", rx_buffer);
+    return len;
 }
 
-// Define the characteristic with the notification callback
-static struct bt_gatt_attr alert_notification_attrs[] = {
-    BT_GATT_PRIMARY_SERVICE(&alert_notification_service_uuid),
-    BT_GATT_CHARACTERISTIC(&alert_notification_control_point_uuid.uuid, BT_GATT_CHRC_NOTIFY,
-                           BT_GATT_PERM_READ, NULL, notify_cb, alert_notification_control_point),
-};
-
-// Define the GATT service
-static struct bt_gatt_service alert_notification_service = BT_GATT_SERVICE(alert_notification_attrs);
+/* GATT service declaration with two characteristics */
+BT_GATT_SERVICE_DEFINE(my_service,
+    BT_GATT_PRIMARY_SERVICE(&my_service_uuid),
+    BT_GATT_CHARACTERISTIC(&char_uuid.uuid,
+                           BT_GATT_CHRC_WRITE_WITHOUT_RESP,
+                           BT_GATT_PERM_WRITE,
+                           NULL, write_callback, rx_buffer),
+);
 
 //=======================================================================
 // Define the connection callback functions
@@ -132,9 +143,6 @@ void ble_init(void)
         return;
     }
 
-    // Register the Alert Notification GATT service
-    bt_gatt_service_register(&alert_notification_service);
-
     // Register connection callbacks
     bt_conn_cb_register(&conn_callbacks);
 
@@ -147,6 +155,4 @@ void ble_init(void)
         return;
     }
     LOG_INF("Advertising successfully started"); 
-
-
 }

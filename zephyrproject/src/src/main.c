@@ -24,10 +24,6 @@
 
 LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 
-
-/* 1000 msec = 1 sec */
-#define SLEEP_TIME_MS   1000
-
 /* The devicetree node identifier for the "led0" alias. */
 #define LED0_NODE DT_ALIAS(led0)
 
@@ -47,7 +43,7 @@ void main(void)
     ble_init();
 
     while(true){
-		k_msleep(1000);
+		  k_msleep(1000);
     } 
 
     return 0;

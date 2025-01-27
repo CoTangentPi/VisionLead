@@ -1,3 +1,8 @@
+# ===============================================================
+# Please use nRF connect instead, this code does not work well
+# ===============================================================
+
+
 import asyncio
 from bleak import BleakClient
 import logging

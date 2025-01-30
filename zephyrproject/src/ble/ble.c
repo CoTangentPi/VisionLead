@@ -45,6 +45,41 @@ static const struct bt_data adv_data[] = {
     BT_DATA_BYTES(BT_DATA_UUID16_ALL, 0x11, 0x18),
 };
 
+
+
+
+
+
+
+
+
+
+
+
+void decode_and_execute_command(const char *message) {
+    if (strncmp(message, "1", 1) == 0) {
+        gpio_set_pin(MOTOR_0, 1);
+        k_msleep(500);
+        gpio_set_pin(MOTOR_0, 0);
+    } else if (strncmp(message, "2", 1) == 0) {
+        gpio_set_pin(MOTOR_1, 1);
+        k_msleep(500);
+        gpio_set_pin(MOTOR_1, 0);
+    } else if (strncmp(message, "3", 1) == 0) {
+        gpio_set_pin(RED_LED, 1);
+    } else if (strncmp(message, "4", 1) == 0) {
+        gpio_set_pin(RED_LED, 0);
+    } else {
+        LOG_WRN("Unknown command: %s\n", message);
+    }
+}
+
+
+
+
+
+
+
 //=======================================================================
 // Define the Alert Notification Service UUID
 //=======================================================================
@@ -78,6 +113,11 @@ static ssize_t write_callback(struct bt_conn *conn,
     rx_buffer[len] = '\0';
 
     LOG_INF("Data received: %s\n", rx_buffer);
+    // Call the decoder function
+    decode_and_execute_command(rx_buffer);
+
+
+
     return len;
 }
 

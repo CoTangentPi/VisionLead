@@ -21,8 +21,15 @@ typedef enum {
     BLUE_LED
 } PINS;
 
+// Define the patterns
+#define MOTOR_SHORT_PULSE 1
+#define MOTOR_LONG_PULSE 2
+#define MOTOR_DOUBLE_PULSE 3
+
 void gpio_init(void);
 
 int gpio_set_pin(PINS pin_to_set, int high_low);
+
+int pulse_motor(PINS motor_pin, int pattern);
 
 #endif // GPIO_H

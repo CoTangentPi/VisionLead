@@ -36,6 +36,10 @@ void gpio_init(){
     gpio_pin_set_dt(&red_led, 0);
     gpio_pin_set_dt(&blue_led, 0);
 
+    //set motor to off
+    gpio_pin_set_dt(&motor_0, 1);
+    gpio_pin_set_dt(&motor_1, 1);
+
     //done
 }
 
@@ -49,19 +53,19 @@ int gpio_set_pin(PINS pin_to_set, int high_low){
 
     //check if inputs are valid values
     if(
-	high_low != 0 && high_low != 1
+	    high_low != 0 && high_low != 1
     ){
-	return GPIO_PIN_SET_ERROR;
+	    return GPIO_PIN_SET_ERROR;
     }
 
     if(
-	pin_to_set != MOTOR_0 && 
-	pin_to_set != MOTOR_1 && 
-	pin_to_set != BUZZER_0 &&
-	pin_to_set != RED_LED &&
-	pin_to_set != BLUE_LED
+        pin_to_set != MOTOR_0 && 
+        pin_to_set != MOTOR_1 && 
+        pin_to_set != BUZZER_0 &&
+        pin_to_set != RED_LED &&
+        pin_to_set != BLUE_LED
     ){
-	return GPIO_PIN_SET_ERROR;
+        return GPIO_PIN_SET_ERROR;
     }
 
     //inputs are valid, set pin
@@ -84,8 +88,42 @@ int gpio_set_pin(PINS pin_to_set, int high_low){
 	    break;
     }
 
+    return GPIO_PIN_SET_SUCCESS;
+}
+
+int pulse_motor(PINS motor_pin, int pattern){
+    if(
+        motor_pin != MOTOR_0 && 
+        motor_pin != MOTOR_1
+    ){
+        return GPIO_PIN_SET_ERROR;
+    }
+
+    // Check the pattern and perform the corresponding actions
+    switch (pattern) {
+    case MOTOR_SHORT_PULSE:
+        gpio_set_pin(motor_pin, 0);
+        k_msleep(100);
+        gpio_set_pin(motor_pin, 1);
+        break;
+    case MOTOR_LONG_PULSE:
+        gpio_set_pin(motor_pin, 0);
+        k_msleep(500);
+        gpio_set_pin(motor_pin, 1);
+        break;
+    case MOTOR_DOUBLE_PULSE:
+        gpio_set_pin(motor_pin, 0);
+        k_msleep(100);
+        gpio_set_pin(motor_pin, 1);
+        k_msleep(100);
+        gpio_set_pin(motor_pin, 0);
+        k_msleep(100);
+        gpio_set_pin(motor_pin, 1);
+        break;
+    default:
+        return GPIO_PIN_SET_ERROR;
+    }
 
     return GPIO_PIN_SET_SUCCESS;
-
 }
 

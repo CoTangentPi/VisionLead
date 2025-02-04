@@ -48,23 +48,14 @@ static const struct bt_data adv_data[] = {
 
 
 
-
-
-
-
-
-
-
-
+//=======================================================================
+// Decode function
+//=======================================================================
 void decode_and_execute_command(const char *message) {
     if (strncmp(message, "1", 1) == 0) {
-        gpio_set_pin(MOTOR_0, 1);
-        k_msleep(500);
-        gpio_set_pin(MOTOR_0, 0);
+        pulse_motor(MOTOR_0, MOTOR_SHORT_PULSE);
     } else if (strncmp(message, "2", 1) == 0) {
-        gpio_set_pin(MOTOR_1, 1);
-        k_msleep(500);
-        gpio_set_pin(MOTOR_1, 0);
+        pulse_motor(MOTOR_1, MOTOR_SHORT_PULSE);
     } else if (strncmp(message, "3", 1) == 0) {
         gpio_set_pin(RED_LED, 1);
     } else if (strncmp(message, "4", 1) == 0) {

@@ -45,31 +45,60 @@ static const struct bt_data adv_data[] = {
     BT_DATA_BYTES(BT_DATA_UUID16_ALL, 0x11, 0x18),
 };
 
-
-
-
 //=======================================================================
 // Decode function
 //=======================================================================
-void decode_and_execute_command(const char *message) {
-    if (strncmp(message, "1", 1) == 0) {
-        pulse_motor(MOTOR_0, MOTOR_SHORT_PULSE);
-    } else if (strncmp(message, "2", 1) == 0) {
-        pulse_motor(MOTOR_1, MOTOR_SHORT_PULSE);
-    } else if (strncmp(message, "3", 1) == 0) {
-        gpio_set_pin(RED_LED, 1);
-    } else if (strncmp(message, "4", 1) == 0) {
-        gpio_set_pin(RED_LED, 0);
-    } else {
-        LOG_WRN("Unknown command: %s\n", message);
+void decode_and_execute_command(const uint8_t *message, uint16_t len) {
+    switch (message[0]) {
+        case 0x01:
+            switch (message[1]) {
+                case MOTOR_SHORT_PULSE:
+                    pulse_motor(MOTOR_0, MOTOR_SHORT_PULSE);
+                    break;
+                case MOTOR_LONG_PULSE:
+                    pulse_motor(MOTOR_0, MOTOR_LONG_PULSE);
+                    break;
+                case MOTOR_DOUBLE_PULSE:
+                    pulse_motor(MOTOR_0, MOTOR_DOUBLE_PULSE);
+                    break;
+                default:
+                    LOG_WRN("Unknown motor0 command: %x", message[1]);
+                    break;
+            }
+            break;
+        case 0x02:
+            switch (message[1]) {
+                case MOTOR_SHORT_PULSE:
+                    pulse_motor(MOTOR_1, MOTOR_SHORT_PULSE);
+                    break;
+                case MOTOR_LONG_PULSE:
+                    pulse_motor(MOTOR_1, MOTOR_LONG_PULSE);
+                    break;
+                case MOTOR_DOUBLE_PULSE:
+                    pulse_motor(MOTOR_1, MOTOR_DOUBLE_PULSE);
+                    break;
+                default:
+                    LOG_WRN("Unknown motor1 command: %x", message[1]);
+                    break;
+            }
+            break;
+        case 0x03:
+            switch (message[1]) {
+                case 0x01:
+                    gpio_set_pin(RED_LED, 1);
+                    break;
+                case 0x02:
+                    gpio_set_pin(RED_LED, 0);
+                    break;
+                default:
+                    LOG_WRN("Unknown other command: %x", message[1]);
+                    break;
+            }
+        default:
+            LOG_WRN("Unknown command: %s\n", message);
+            break;
     }
 }
-
-
-
-
-
-
 
 //=======================================================================
 // Define the Alert Notification Service UUID
@@ -85,7 +114,7 @@ static struct bt_uuid_128 char_uuid = BT_UUID_INIT_128(
 
 /* Buffers for characteristic data */
 #define MAX_DATA_LEN 20
-static char rx_buffer[MAX_DATA_LEN + 1]; // Writable characteristic
+static uint8_t rx_buffer[MAX_DATA_LEN];
 
 /* Callback for writable characteristic (char) */
 static ssize_t write_callback(struct bt_conn *conn,
@@ -96,18 +125,20 @@ static ssize_t write_callback(struct bt_conn *conn,
                               uint8_t flags) {
     if (len >= MAX_DATA_LEN) {
         printk("Received data is too large, truncating to %d bytes\n", MAX_DATA_LEN);
-        len = MAX_DATA_LEN - 1;
+        len = MAX_DATA_LEN;
     }
 
     memset(rx_buffer, 0, sizeof(rx_buffer));
     memcpy(rx_buffer, buf, len);
-    rx_buffer[len] = '\0';
 
-    LOG_INF("Data received: %s\n", rx_buffer);
+    LOG_INF("Data length: %d", len);
+    LOG_INF("Data received:");
+    for (int i = 0; i < len; i++) {
+        LOG_INF("%x", rx_buffer[i]);
+    }
+
     // Call the decoder function
-    decode_and_execute_command(rx_buffer);
-
-
+    decode_and_execute_command(rx_buffer, len);
 
     return len;
 }

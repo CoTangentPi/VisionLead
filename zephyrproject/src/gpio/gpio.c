@@ -17,15 +17,13 @@ const static struct gpio_dt_spec blue_led = GPIO_DT_SPEC_GET(DT_NODELABEL(blue_l
 #define GPIO_PIN_SET_SUCCESS 1
 
 /*
-    *
-    * initalize gpio pins as outputs, currently only enables 
-    * D4, D5, D6, as those are used in the latest schematic from
-    * hardware team
-    *
+    * initalize gpio pins as outputs,
+    * allows the motors, buzzer, and two leds
+    * to be driven high or low
 */
 void gpio_init(){
     
-    //configure pins D4, D5, and D6 as output
+    //configure motors, buzzer and leds as output
     gpio_pin_configure_dt(&motor_0, GPIO_OUTPUT);
     gpio_pin_configure_dt(&motor_1, GPIO_OUTPUT);
     gpio_pin_configure_dt(&buzzer_0, GPIO_OUTPUT);

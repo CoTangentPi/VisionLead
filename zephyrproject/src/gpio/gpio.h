@@ -26,10 +26,22 @@ typedef enum {
 #define MOTOR_LONG_PULSE 2
 #define MOTOR_DOUBLE_PULSE 3
 
+
+/*
+    * initalize gpio pins as outputs,
+    * allows the motors, buzzer, and two leds
+    * to be driven high or low
+*/
 void gpio_init(void);
-
+/*
+    * set value being ouptut on GPIO PINS
+    * returns 1 on sucess, -1 on failure
+*/
 int gpio_set_pin(PINS pin_to_set, int high_low);
-
+/*
+    * drive one of the two motors for a 
+    * set amount of time, using one of three patterns
+*/
 int pulse_motor(PINS motor_pin, int pattern);
 
 #endif // GPIO_H

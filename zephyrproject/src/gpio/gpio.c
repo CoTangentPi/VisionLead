@@ -14,9 +14,7 @@ const static struct gpio_dt_spec blue_led = GPIO_DT_SPEC_GET(DT_NODELABEL(blue_l
 
 K_THREAD_STACK_DEFINE(my_stack_area, MY_STACK_SIZE);
 struct k_work_q motor_0_work_queue;
-k_work_queue_init(&motor_0_work);
 struct k_work_q motor_1_work_queue;
-k_work_queue_init(&motor_1_work);
 
 struct MOTOR_DEVICE {
     struct k_work work;
@@ -32,7 +30,9 @@ struct MOTOR_DEVICE motor_1_work;
     * to be driven high or low
 */
 void gpio_init(){
-    
+       
+    k_work_queue_init(&motor_0_work_queue);
+    k_work_queue_init(&motor_1_work_queue);
     //configure motors, buzzer and leds as output
     gpio_pin_configure_dt(&motor_0, GPIO_OUTPUT);
     gpio_pin_configure_dt(&motor_1, GPIO_OUTPUT);
@@ -119,14 +119,14 @@ int gpio_set_pin(PINS pin_to_set, int high_low){
 
 extern void buzz_motor(void * motor, void * pulse_type, void * p3) {
     
-    const PINS motor_pin = *((PINS *) motor));
+    const PINS motor_pin = *((PINS *) motor);
     const PULSE_TYPE pulse_length = *((PULSE_TYPE *) pulse_type);
 }
 
 void print_error(struct k_work *item)
 {
-    struct device_info *the_device =
-        CONTAINER_OF(item, struct motor_device, work);
+    struct MOTOR_DEVICE *the_device =
+        CONTAINER_OF(item, struct MOTOR_DEVICE, work);
     printk("Got error on device %s\n", the_device->pin);
 }
 

@@ -51,6 +51,6 @@ int gpio_set_pin(PINS pin_to_set, int high_low);
     * drive one of the two motors for a 
     * set amount of time, using one of three patterns
 */
-int pulse_motor(PINS motor_pin, int pattern);
+int pulse_motor(PINS motor_pin, PULSE_TYPE pattern);
 
 #endif // GPIO_H

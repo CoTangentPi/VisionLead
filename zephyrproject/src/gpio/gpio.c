@@ -30,7 +30,7 @@ struct MOTOR_DEVICE motor_1_work;
     * to be driven high or low
 */
 void gpio_init(){
-       
+    printk("starting gpio init");   
     k_work_queue_init(&motor_0_work_queue);
     k_work_queue_init(&motor_1_work_queue);
     //configure motors, buzzer and leds as output

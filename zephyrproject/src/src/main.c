@@ -39,11 +39,10 @@ void main(void)
 
 	LOG_INF("Begain GPIO and BLE initialization");
 
-    //gpio_init();
+    gpio_init();
     ble_init();
 
     while(true){
-	printk("testing");	    
 	k_msleep(1000);
     } 
 

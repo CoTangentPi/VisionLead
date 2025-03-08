@@ -12,7 +12,8 @@ const static struct gpio_dt_spec buzzer_0 = GPIO_DT_SPEC_GET(DT_NODELABEL(motor_
 const static struct gpio_dt_spec red_led = GPIO_DT_SPEC_GET(DT_NODELABEL(red_led), gpios);
 const static struct gpio_dt_spec blue_led = GPIO_DT_SPEC_GET(DT_NODELABEL(blue_led), gpios);
 
-K_THREAD_STACK_DEFINE(my_stack_area, MY_STACK_SIZE);
+K_THREAD_STACK_DEFINE(motor_0_stack, MY_STACK_SIZE);
+K_THREAD_STACK_DEFINE(motor_1_stack, MY_STACK_SIZE);
 struct k_work_q motor_0_work_queue;
 struct k_work_q motor_1_work_queue;
 
@@ -30,7 +31,7 @@ struct MOTOR_DEVICE motor_1_work;
     * to be driven high or low
 */
 void gpio_init(){
-    printk("starting gpio init");   
+    printk("starting gpio init\n");   
     k_work_queue_init(&motor_0_work_queue);
     k_work_queue_init(&motor_1_work_queue);
     //configure motors, buzzer and leds as output
@@ -47,23 +48,23 @@ void gpio_init(){
     //set motor to off
     gpio_pin_set_dt(&motor_0, 1);
     gpio_pin_set_dt(&motor_1, 1);
-    
+        
     k_work_queue_start(
 	&motor_0_work_queue,
-	my_stack_area,
-	K_THREAD_STACK_SIZEOF(my_stack_area),
+	motor_0_stack,
+	K_THREAD_STACK_SIZEOF(motor_0_stack),
 	MY_PRIORITY,
 	NULL
     );
 
     k_work_queue_start(
 	&motor_1_work_queue,
-	my_stack_area,
-	K_THREAD_STACK_SIZEOF(my_stack_area),
+	motor_1_stack,
+	K_THREAD_STACK_SIZEOF(motor_1_stack),
 	MY_PRIORITY,
 	NULL
     );
-
+     
     motor_0_work.pin = MOTOR_0;
     motor_1_work.pin = MOTOR_1;
     //done
@@ -125,13 +126,15 @@ extern void buzz_motor(void * motor, void * pulse_type, void * p3) {
 
 void print_error(struct k_work *item)
 {
+
     struct MOTOR_DEVICE *the_device =
         CONTAINER_OF(item, struct MOTOR_DEVICE, work);
-    printk("Got error on device %s\n", the_device->pin);
+    printk("Got error on device %d\n", the_device->pin);
 }
 
 
 int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
+    printk("pluse motor!\n");
     if(
         motor_pin != MOTOR_0 && 
         motor_pin != MOTOR_1
@@ -155,7 +158,9 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
 		    k_work_init(&motor_0_work.work, print_error);
 		    break;
 		case MOTOR_DOUBLE_PULSE:
+		    printk("starting double pulse\n");
 		    k_work_init(&motor_0_work.work, print_error);
+		    k_work_submit_to_queue(&motor_0_work_queue, &motor_0_work.work);
 		    break;
 		default:
 		    return GPIO_PIN_SET_ERROR;
@@ -181,7 +186,7 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
 	    }
 	    break;
     }
-
+    
     return GPIO_PIN_SET_SUCCESS;
 }
 

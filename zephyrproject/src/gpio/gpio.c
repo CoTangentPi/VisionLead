@@ -20,6 +20,7 @@ struct k_work_q motor_1_work_queue;
 struct MOTOR_DEVICE {
     struct k_work work;
     PINS pin;
+    PULSE_TYPE type;
 };
 
 struct MOTOR_DEVICE motor_0_work;
@@ -130,6 +131,7 @@ void print_error(struct k_work *item)
     struct MOTOR_DEVICE *the_device =
         CONTAINER_OF(item, struct MOTOR_DEVICE, work);
     printk("Got error on device %d\n", the_device->pin);
+    printk("Got the pulse type %d\n", the_device->type);
 }
 
 
@@ -155,10 +157,14 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
 		    k_work_init(&motor_0_work.work, print_error);
 		    break; 
 		case MOTOR_LONG_PULSE:
+		    printk("starting long pulse\n");
+		    motor_0_work.type = MOTOR_LONG_PULSE;
 		    k_work_init(&motor_0_work.work, print_error);
+		    k_work_submit_to_queue(&motor_0_work_queue, &motor_0_work.work);
 		    break;
 		case MOTOR_DOUBLE_PULSE:
 		    printk("starting double pulse\n");
+		    motor_0_work.type = MOTOR_DOUBLE_PULSE;
 		    k_work_init(&motor_0_work.work, print_error);
 		    k_work_submit_to_queue(&motor_0_work_queue, &motor_0_work.work);
 		    break;

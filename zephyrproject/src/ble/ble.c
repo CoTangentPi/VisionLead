@@ -59,8 +59,7 @@ void decode_and_execute_command(const uint8_t *message, uint16_t len) {
                     pulse_motor(MOTOR_0, MOTOR_LONG_PULSE);
                     break;
                 case MOTOR_DOUBLE_PULSE:
-                    int test = pulse_motor(MOTOR_0, MOTOR_DOUBLE_PULSE); 
-		    printk("value of pulse %d", test);
+                    pulse_motor(MOTOR_0, MOTOR_DOUBLE_PULSE); 
                     break;
                 default:
                     LOG_WRN("Unknown motor0 command: %x", message[1]);
@@ -84,6 +83,22 @@ void decode_and_execute_command(const uint8_t *message, uint16_t len) {
             }
             break;
         case 0x03:
+	    switch (message[1]) {
+                case MOTOR_SHORT_PULSE:
+                    pulse_motor(MOTOR_BOTH, MOTOR_SHORT_PULSE);
+                    break;
+                case MOTOR_LONG_PULSE:
+                    pulse_motor(MOTOR_BOTH, MOTOR_LONG_PULSE);
+                    break;
+                case MOTOR_DOUBLE_PULSE:
+                    pulse_motor(MOTOR_BOTH, MOTOR_DOUBLE_PULSE);
+                    break;
+                default:
+                    LOG_WRN("Unknown motor1 command: %x", message[1]);
+                    break;
+            }
+            break;
+	case 0x04:
             switch (message[1]) {
                 case 0x01:
                     gpio_set_pin(RED_LED, 1);

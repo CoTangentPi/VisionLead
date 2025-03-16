@@ -3,6 +3,7 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/logging/log.h>
+#include "zephyr/logging/log_core.h"
 #include <zephyr/kernel.h>
  
 //get motor 0, motor 1, and buzzer 0 devices from device tree
@@ -119,77 +120,128 @@ int gpio_set_pin(PINS pin_to_set, int high_low){
     return GPIO_PIN_SET_SUCCESS;
 }
 
-extern void buzz_motor(void * motor, void * pulse_type, void * p3) {
-    
-    const PINS motor_pin = *((PINS *) motor);
-    const PULSE_TYPE pulse_length = *((PULSE_TYPE *) pulse_type);
-}
-
-void print_error(struct k_work *item)
+void buzz_motor_async(struct k_work *item)
 {
-
-    struct MOTOR_DEVICE *the_device =
+    //get information from device pointer, and buzz motor 
+    //using the given pattern
+    struct MOTOR_DEVICE *device =
         CONTAINER_OF(item, struct MOTOR_DEVICE, work);
-    printk("Got error on device %d\n", the_device->pin);
-    printk("Got the pulse type %d\n", the_device->type);
+
+    PULSE_TYPE pattern = device->type;
+    PINS pin = device->pin;
+
+
+    switch (pattern) {
+	case MOTOR_SHORT_PULSE:
+	    gpio_set_pin(pin, 0);
+	    k_msleep(100);
+	    gpio_set_pin(pin, 1);
+	    break;
+	case MOTOR_LONG_PULSE:
+	    gpio_set_pin(pin, 0);
+	    k_msleep(500);
+	    gpio_set_pin(pin, 1);
+	    break;
+	case MOTOR_DOUBLE_PULSE:
+	    gpio_set_pin(pin, 0);
+	    k_msleep(100);
+	    gpio_set_pin(pin, 1);
+	    k_msleep(100);
+	    gpio_set_pin(pin, 0);
+	    k_msleep(100);
+	    gpio_set_pin(pin, 1);
+	    break;
+    }
 }
 
 
 int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
-    printk("pluse motor!\n");
     if(
         motor_pin != MOTOR_0 && 
-        motor_pin != MOTOR_1
+        motor_pin != MOTOR_1 &&
+	motor_pin != MOTOR_BOTH
     ){
         return GPIO_PIN_SET_ERROR;
     }
     
     // Check the pattern and perform the corresponding actions
-
+    // sets up work for each motor device if it is available,
+    // and then submits the work
     switch(motor_pin) {
 	case MOTOR_0:
-	    if(k_work_busy_get(&motor_0_work)){
+	    if(k_work_busy_get(&motor_0_work.work)){
 		//motor 0 is currently busy
+		printk("MOTOR 0 BUSY!\n");
 		return GPIO_PIN_SET_ERROR;
 	    }
 	    switch (pattern) {
 		case MOTOR_SHORT_PULSE:
-		    k_work_init(&motor_0_work.work, print_error);
+		    motor_0_work.type = MOTOR_SHORT_PULSE;
 		    break; 
 		case MOTOR_LONG_PULSE:
-		    printk("starting long pulse\n");
 		    motor_0_work.type = MOTOR_LONG_PULSE;
-		    k_work_init(&motor_0_work.work, print_error);
-		    k_work_submit_to_queue(&motor_0_work_queue, &motor_0_work.work);
 		    break;
 		case MOTOR_DOUBLE_PULSE:
-		    printk("starting double pulse\n");
 		    motor_0_work.type = MOTOR_DOUBLE_PULSE;
-		    k_work_init(&motor_0_work.work, print_error);
-		    k_work_submit_to_queue(&motor_0_work_queue, &motor_0_work.work);
 		    break;
 		default:
 		    return GPIO_PIN_SET_ERROR;
 	    }
+	    k_work_init(&motor_0_work.work, buzz_motor_async);
+	    k_work_submit_to_queue(&motor_0_work_queue, &motor_0_work.work);
 	    break;
 	case MOTOR_1:
-	    if(k_work_busy_get(&motor_1_work)){
+	    if(k_work_busy_get(&motor_1_work.work)){
 		//motor 1 is currently busy
+		printk("MOTOR 1 BUSY!\n");
 		return GPIO_PIN_SET_ERROR;
 	    }
 	    switch (pattern) {
 		case MOTOR_SHORT_PULSE:
-		    k_work_init(&motor_1_work.work, print_error);
+		    motor_1_work.type = MOTOR_SHORT_PULSE;
 		    break; 
 		case MOTOR_LONG_PULSE:
-		    k_work_init(&motor_1_work.work, print_error);
+		    motor_1_work.type = MOTOR_LONG_PULSE;
 		    break;
 		case MOTOR_DOUBLE_PULSE:
-		    k_work_init(&motor_1_work.work, print_error);
+		    motor_1_work.type = MOTOR_DOUBLE_PULSE;
 		    break;
 		default:
 		    return GPIO_PIN_SET_ERROR;
 	    }
+	    k_work_init(&motor_1_work.work, buzz_motor_async);
+	    k_work_submit_to_queue(&motor_1_work_queue, &motor_1_work.work);
+	    break;
+	case MOTOR_BOTH:
+	    if(
+		k_work_busy_get(&motor_1_work.work) 
+		||
+		k_work_busy_get(&motor_0_work.work)
+	    ){
+		//motor 1 is currently busy
+		printk("BOTH MOTORS BUSY!\n");
+		return GPIO_PIN_SET_ERROR;
+	    }
+	    switch (pattern) {
+		case MOTOR_SHORT_PULSE:
+		    motor_1_work.type = MOTOR_SHORT_PULSE;
+		    motor_0_work.type = MOTOR_SHORT_PULSE;
+		    break; 
+		case MOTOR_LONG_PULSE:
+		    motor_1_work.type = MOTOR_LONG_PULSE;
+		    motor_0_work.type = MOTOR_LONG_PULSE;
+		    break;
+		case MOTOR_DOUBLE_PULSE:
+		    motor_1_work.type = MOTOR_DOUBLE_PULSE;
+		    motor_0_work.type = MOTOR_DOUBLE_PULSE;
+		    break;
+		default:
+		    return GPIO_PIN_SET_ERROR;
+	    }
+	    k_work_init(&motor_1_work.work, buzz_motor_async);
+	    k_work_init(&motor_0_work.work, buzz_motor_async);
+	    k_work_submit_to_queue(&motor_1_work_queue, &motor_1_work.work);
+	    k_work_submit_to_queue(&motor_0_work_queue, &motor_0_work.work);
 	    break;
     }
     

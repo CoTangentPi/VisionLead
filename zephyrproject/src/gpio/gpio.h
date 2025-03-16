@@ -24,6 +24,7 @@
 typedef enum {
     MOTOR_0,
     MOTOR_1, 
+    MOTOR_BOTH,
     BUZZER_0,
     RED_LED,
     BLUE_LED

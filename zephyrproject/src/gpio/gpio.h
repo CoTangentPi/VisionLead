@@ -13,23 +13,45 @@
 #ifndef GPIO_H
 #define GPIO_H 
 
+#define MY_STACK_SIZE 500
+#define MY_PRIORITY 5
+
+//error states
+#define GPIO_PIN_SET_ERROR -1
+#define GPIO_PIN_SET_SUCCESS 1
+
+//gpio devices
 typedef enum {
     MOTOR_0,
     MOTOR_1, 
+    MOTOR_BOTH,
     BUZZER_0,
     RED_LED,
     BLUE_LED
 } PINS;
 
-// Define the patterns
-#define MOTOR_SHORT_PULSE 1
-#define MOTOR_LONG_PULSE 2
-#define MOTOR_DOUBLE_PULSE 3
+//motor pulse types.
+typedef enum {
+    MOTOR_SHORT_PULSE,
+    MOTOR_LONG_PULSE,
+    MOTOR_DOUBLE_PULSE
+} PULSE_TYPE;
 
+/*
+    * initalize gpio pins as outputs,
+    * allows the motors, buzzer, and two leds
+    * to be driven high or low
+*/
 void gpio_init(void);
-
+/*
+    * set value being ouptut on GPIO PINS
+    * returns 1 on sucess, -1 on failure
+*/
 int gpio_set_pin(PINS pin_to_set, int high_low);
-
-int pulse_motor(PINS motor_pin, int pattern);
+/*
+    * drive one of the two motors for a 
+    * set amount of time, using one of three patterns
+*/
+int pulse_motor(PINS motor_pin, PULSE_TYPE pattern);
 
 #endif // GPIO_H

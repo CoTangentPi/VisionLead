@@ -43,7 +43,7 @@ void main(void)
     ble_init();
 
     while(true){
-		  k_msleep(1000);
+	k_msleep(1000);
     } 
 
     return 0;

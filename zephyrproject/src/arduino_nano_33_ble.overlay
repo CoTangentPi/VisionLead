@@ -6,11 +6,11 @@
 		label = "motor 0";
 	    };
 	    motor_1: motor_1 {
-	       gpios = <&gpio1 13 GPIO_ACTIVE_HIGH>;
+	       gpios = <&gpio1 15 GPIO_ACTIVE_HIGH>;
 	       label = "motor 1";
 	    };
 	    buzzer_0: buzzer_0 {
-		gpios = <&gpio0 21 GPIO_ACTIVE_HIGH>;
+		gpios = <&gpio0 23 GPIO_ACTIVE_HIGH>;
 		label = "buzzer 0";
 	    };
     };

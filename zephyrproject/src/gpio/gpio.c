@@ -134,22 +134,35 @@ void buzz_motor_async(struct k_work *item)
     switch (pattern) {
 	case MOTOR_SHORT_PULSE:
 	    gpio_set_pin(pin, 0);
-	    k_msleep(100);
+	    k_msleep(MOTOR_SHORT_PULSE_TIME);
 	    gpio_set_pin(pin, 1);
 	    break;
 	case MOTOR_LONG_PULSE:
 	    gpio_set_pin(pin, 0);
-	    k_msleep(500);
+	    k_msleep(MOTOR_LONG_PULSE_TIME);
 	    gpio_set_pin(pin, 1);
 	    break;
 	case MOTOR_DOUBLE_PULSE:
 	    gpio_set_pin(pin, 0);
-	    k_msleep(100);
+	    k_msleep(MOTOR_SHORT_PULSE_TIME);
 	    gpio_set_pin(pin, 1);
-	    k_msleep(100);
+	    k_msleep(MOTOR_SHORT_PULSE_TIME);
 	    gpio_set_pin(pin, 0);
-	    k_msleep(100);
+	    k_msleep(MOTOR_SHORT_PULSE_TIME);
 	    gpio_set_pin(pin, 1);
+	    break;
+	case MOTOR_S_L_S_PULSE:
+	    gpio_set_pin(pin, 0);				// On, short time
+	    k_msleep(MOTOR_SHORT_PULSE_TIME);	
+	    gpio_set_pin(pin, 1);               // Off, short time
+	    k_msleep(MOTOR_SHORT_PULSE_TIME);
+	    gpio_set_pin(pin, 0);				// On, long time
+	    k_msleep(MOTOR_LONG_PULSE_TIME);
+	    gpio_set_pin(pin, 1);				// Off, short time
+		k_msleep(MOTOR_SHORT_PULSE_TIME);
+		gpio_set_pin(pin, 0);				// On, short time
+	    k_msleep(MOTOR_SHORT_PULSE_TIME);
+	    gpio_set_pin(pin, 1);				// Off
 	    break;
     }
 }
@@ -174,19 +187,7 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
 		printk("MOTOR 0 BUSY!\n");
 		return GPIO_PIN_SET_ERROR;
 	    }
-	    switch (pattern) {
-		case MOTOR_SHORT_PULSE:
-		    motor_0_work.type = MOTOR_SHORT_PULSE;
-		    break; 
-		case MOTOR_LONG_PULSE:
-		    motor_0_work.type = MOTOR_LONG_PULSE;
-		    break;
-		case MOTOR_DOUBLE_PULSE:
-		    motor_0_work.type = MOTOR_DOUBLE_PULSE;
-		    break;
-		default:
-		    return GPIO_PIN_SET_ERROR;
-	    }
+		motor_0_work.type = pattern;
 	    k_work_init(&motor_0_work.work, buzz_motor_async);
 	    k_work_submit_to_queue(&motor_0_work_queue, &motor_0_work.work);
 	    break;
@@ -196,19 +197,7 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
 		printk("MOTOR 1 BUSY!\n");
 		return GPIO_PIN_SET_ERROR;
 	    }
-	    switch (pattern) {
-		case MOTOR_SHORT_PULSE:
-		    motor_1_work.type = MOTOR_SHORT_PULSE;
-		    break; 
-		case MOTOR_LONG_PULSE:
-		    motor_1_work.type = MOTOR_LONG_PULSE;
-		    break;
-		case MOTOR_DOUBLE_PULSE:
-		    motor_1_work.type = MOTOR_DOUBLE_PULSE;
-		    break;
-		default:
-		    return GPIO_PIN_SET_ERROR;
-	    }
+		motor_1_work.type = pattern;
 	    k_work_init(&motor_1_work.work, buzz_motor_async);
 	    k_work_submit_to_queue(&motor_1_work_queue, &motor_1_work.work);
 	    break;
@@ -222,22 +211,8 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
 		printk("BOTH MOTORS BUSY!\n");
 		return GPIO_PIN_SET_ERROR;
 	    }
-	    switch (pattern) {
-		case MOTOR_SHORT_PULSE:
-		    motor_1_work.type = MOTOR_SHORT_PULSE;
-		    motor_0_work.type = MOTOR_SHORT_PULSE;
-		    break; 
-		case MOTOR_LONG_PULSE:
-		    motor_1_work.type = MOTOR_LONG_PULSE;
-		    motor_0_work.type = MOTOR_LONG_PULSE;
-		    break;
-		case MOTOR_DOUBLE_PULSE:
-		    motor_1_work.type = MOTOR_DOUBLE_PULSE;
-		    motor_0_work.type = MOTOR_DOUBLE_PULSE;
-		    break;
-		default:
-		    return GPIO_PIN_SET_ERROR;
-	    }
+		motor_1_work.type = pattern;
+		motor_0_work.type = pattern;
 	    k_work_init(&motor_1_work.work, buzz_motor_async);
 	    k_work_init(&motor_0_work.work, buzz_motor_async);
 	    k_work_submit_to_queue(&motor_1_work_queue, &motor_1_work.work);

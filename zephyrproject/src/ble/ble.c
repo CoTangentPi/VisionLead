@@ -51,52 +51,13 @@ static const struct bt_data adv_data[] = {
 void decode_and_execute_command(const uint8_t *message, uint16_t len) {
     switch (message[0]) {
         case 0x01:
-            switch (message[1]) {
-                case MOTOR_SHORT_PULSE:
-                    pulse_motor(MOTOR_0, MOTOR_SHORT_PULSE);
-                    break;
-                case MOTOR_LONG_PULSE:
-                    pulse_motor(MOTOR_0, MOTOR_LONG_PULSE);
-                    break;
-                case MOTOR_DOUBLE_PULSE:
-                    pulse_motor(MOTOR_0, MOTOR_DOUBLE_PULSE); 
-                    break;
-                default:
-                    LOG_WRN("Unknown motor0 command: %x", message[1]);
-                    break;
-            }
+            pulse_motor(MOTOR_0, message[1]);
             break;
         case 0x02:
-            switch (message[1]) {
-                case MOTOR_SHORT_PULSE:
-                    pulse_motor(MOTOR_1, MOTOR_SHORT_PULSE);
-                    break;
-                case MOTOR_LONG_PULSE:
-                    pulse_motor(MOTOR_1, MOTOR_LONG_PULSE);
-                    break;
-                case MOTOR_DOUBLE_PULSE:
-                    pulse_motor(MOTOR_1, MOTOR_DOUBLE_PULSE);
-                    break;
-                default:
-                    LOG_WRN("Unknown motor1 command: %x", message[1]);
-                    break;
-            }
+            pulse_motor(MOTOR_1, message[1]);
             break;
         case 0x03:
-	    switch (message[1]) {
-                case MOTOR_SHORT_PULSE:
-                    pulse_motor(MOTOR_BOTH, MOTOR_SHORT_PULSE);
-                    break;
-                case MOTOR_LONG_PULSE:
-                    pulse_motor(MOTOR_BOTH, MOTOR_LONG_PULSE);
-                    break;
-                case MOTOR_DOUBLE_PULSE:
-                    pulse_motor(MOTOR_BOTH, MOTOR_DOUBLE_PULSE);
-                    break;
-                default:
-                    LOG_WRN("Unknown motor1 command: %x", message[1]);
-                    break;
-            }
+            pulse_motor(MOTOR_BOTH, message[1]);
             break;
 	case 0x04:
             switch (message[1]) {

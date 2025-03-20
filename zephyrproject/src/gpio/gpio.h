@@ -20,6 +20,10 @@
 #define GPIO_PIN_SET_ERROR -1
 #define GPIO_PIN_SET_SUCCESS 1
 
+// Define motor pulse partten duration
+#define MOTOR_SHORT_PULSE_TIME 100
+#define MOTOR_LONG_PULSE_TIME 300
+
 //gpio devices
 typedef enum {
     MOTOR_0,
@@ -34,7 +38,8 @@ typedef enum {
 typedef enum {
     MOTOR_SHORT_PULSE,
     MOTOR_LONG_PULSE,
-    MOTOR_DOUBLE_PULSE
+    MOTOR_DOUBLE_PULSE,
+    MOTOR_S_L_S_PULSE //short long short pulse
 } PULSE_TYPE;
 
 /*

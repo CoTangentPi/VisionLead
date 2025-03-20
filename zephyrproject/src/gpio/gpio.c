@@ -172,7 +172,7 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
     if(
         motor_pin != MOTOR_0 && 
         motor_pin != MOTOR_1 &&
-	    motor_pin != MOTOR_BOTH
+	motor_pin != MOTOR_BOTH
     ){
         return GPIO_PIN_SET_ERROR;
     }

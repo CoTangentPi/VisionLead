@@ -22,7 +22,8 @@
 
 // Define motor pulse partten duration
 #define MOTOR_SHORT_PULSE_TIME 100
-#define MOTOR_LONG_PULSE_TIME 300
+#define MOTOR_MED_PULSE_TIME 300
+#define MOTOR_LONG_PULSE_TIME 1000
 
 //gpio devices
 typedef enum {
@@ -37,9 +38,11 @@ typedef enum {
 //motor pulse types.
 typedef enum {
     MOTOR_SHORT_PULSE,
-    MOTOR_LONG_PULSE,
+    MOTOR_MED_PULSE,
     MOTOR_DOUBLE_PULSE,
-    MOTOR_S_L_S_PULSE //short long short pulse
+    MOTOR_S_L_S_PULSE, //short long short pulse
+    MOTOR_LONG_PULSE, //hold for extened period
+    MOTOR_DOUBLE_LONG_PULSE //hold for extened period
 } PULSE_TYPE;
 
 /*

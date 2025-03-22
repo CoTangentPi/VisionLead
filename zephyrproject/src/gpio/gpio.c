@@ -137,9 +137,9 @@ void buzz_motor_async(struct k_work *item)
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);
 	    gpio_set_pin(pin, 1);
 	    break;
-	case MOTOR_LONG_PULSE:
+	case MOTOR_MED_PULSE:
 	    gpio_set_pin(pin, 0);
-	    k_msleep(MOTOR_LONG_PULSE_TIME);
+	    k_msleep(MOTOR_MED_PULSE_TIME);
 	    gpio_set_pin(pin, 1);
 	    break;
 	case MOTOR_DOUBLE_PULSE:
@@ -156,15 +156,31 @@ void buzz_motor_async(struct k_work *item)
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);	
 	    gpio_set_pin(pin, 1);               // Off, short time
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);
-	    gpio_set_pin(pin, 0);				// On, long time
-	    k_msleep(MOTOR_LONG_PULSE_TIME);
+	    gpio_set_pin(pin, 0);				// On, mid time
+	    k_msleep(MOTOR_MED_PULSE_TIME);
 	    gpio_set_pin(pin, 1);				// Off, short time
 		k_msleep(MOTOR_SHORT_PULSE_TIME);
 		gpio_set_pin(pin, 0);				// On, short time
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);
 	    gpio_set_pin(pin, 1);				// Off
 	    break;
+    case MOTOR_LONG_PULSE:
+	    gpio_set_pin(pin, 0);				// On, long time
+	    k_msleep(MOTOR_LONG_PULSE_TIME);	
+	    gpio_set_pin(pin, 1);				// Off
+	    break;
+    case MOTOR_DOUBLE_LONG_PULSE:
+	    gpio_set_pin(pin, 0);				// On, long time
+	    k_msleep(MOTOR_LONG_PULSE_TIME);	
+	    gpio_set_pin(pin, 1);				// Off
+	    k_msleep(MOTOR_LONG_PULSE_TIME);	
+        gpio_set_pin(pin, 0);				// On, long time
+	    k_msleep(MOTOR_LONG_PULSE_TIME);	
+	    gpio_set_pin(pin, 1);				// Off
+	    break;
     }
+
+
 }
 
 
@@ -172,7 +188,7 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
     if(
         motor_pin != MOTOR_0 && 
         motor_pin != MOTOR_1 &&
-	motor_pin != MOTOR_BOTH
+	    motor_pin != MOTOR_BOTH
     ){
         return GPIO_PIN_SET_ERROR;
     }
@@ -183,9 +199,9 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
     switch(motor_pin) {
 	case MOTOR_0:
 	    if(k_work_busy_get(&motor_0_work.work)){
-		//motor 0 is currently busy
-		printk("MOTOR 0 BUSY!\n");
-		return GPIO_PIN_SET_ERROR;
+            //motor 0 is currently busy
+            printk("MOTOR 0 BUSY!\n");
+            return GPIO_PIN_SET_ERROR;
 	    }
 		motor_0_work.type = pattern;
 	    k_work_init(&motor_0_work.work, buzz_motor_async);
@@ -193,9 +209,9 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
 	    break;
 	case MOTOR_1:
 	    if(k_work_busy_get(&motor_1_work.work)){
-		//motor 1 is currently busy
-		printk("MOTOR 1 BUSY!\n");
-		return GPIO_PIN_SET_ERROR;
+            //motor 1 is currently busy
+            printk("MOTOR 1 BUSY!\n");
+            return GPIO_PIN_SET_ERROR;
 	    }
 		motor_1_work.type = pattern;
 	    k_work_init(&motor_1_work.work, buzz_motor_async);
@@ -207,9 +223,9 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
 		||
 		k_work_busy_get(&motor_0_work.work)
 	    ){
-		//motor 1 is currently busy
-		printk("BOTH MOTORS BUSY!\n");
-		return GPIO_PIN_SET_ERROR;
+            //motor 1 is currently busy
+            printk("BOTH MOTORS BUSY!\n");
+            return GPIO_PIN_SET_ERROR;
 	    }
 		motor_1_work.type = pattern;
 		motor_0_work.type = pattern;

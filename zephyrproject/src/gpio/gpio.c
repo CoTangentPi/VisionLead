@@ -156,7 +156,7 @@ void buzz_motor_async(struct k_work *item)
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);	
 	    gpio_set_pin(pin, 1);               // Off, short time
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);
-	    gpio_set_pin(pin, 0);				// On, long time
+	    gpio_set_pin(pin, 0);				// On, mid time
 	    k_msleep(MOTOR_MED_PULSE_TIME);
 	    gpio_set_pin(pin, 1);				// Off, short time
 		k_msleep(MOTOR_SHORT_PULSE_TIME);

@@ -255,6 +255,8 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
 		k_work_busy_get(&motor_1_work.work) 
 		||
 		k_work_busy_get(&motor_0_work.work)
+		||
+		k_work_busy_get(&buzzer_0_work.work)
 	    ){
             //motor 1 is currently busy
             printk("BOTH MOTORS BUSY!\n");
@@ -265,15 +267,13 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
 	    k_work_init(&motor_1_work.work, buzz_motor_async);
 	    k_work_init(&motor_0_work.work, buzz_motor_async);
 
-	    //now set up speaker if it's not being used
-	    if(!k_work_busy_get(&buzzer_0_work.work)){
-		buzzer_0_work.type = pattern;
-		k_work_init(&buzzer_0_work.work, buzz_motor_async);
-		k_work_submit_to_queue(&buzzer_0_work_queue, &buzzer_0_work.work);
-	    }
+	    //now set up speaker (we know it's not being used already)
+	    buzzer_0_work.type = pattern;
+	    k_work_init(&buzzer_0_work.work, buzz_motor_async);
 
 	    k_work_submit_to_queue(&motor_1_work_queue, &motor_1_work.work);
 	    k_work_submit_to_queue(&motor_0_work_queue, &motor_0_work.work);
+	    k_work_submit_to_queue(&buzzer_0_work_queue, &buzzer_0_work.work);
 	    break;
     }
     

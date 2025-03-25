@@ -9,14 +9,16 @@
 //get motor 0, motor 1, and buzzer 0 devices from device tree
 const static struct gpio_dt_spec motor_0 = GPIO_DT_SPEC_GET(DT_NODELABEL(motor_0), gpios);
 const static struct gpio_dt_spec motor_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(motor_1), gpios);
-const static struct gpio_dt_spec buzzer_0 = GPIO_DT_SPEC_GET(DT_NODELABEL(motor_1), gpios);
+const static struct gpio_dt_spec buzzer_0 = GPIO_DT_SPEC_GET(DT_NODELABEL(buzzer_0), gpios);
 const static struct gpio_dt_spec red_led = GPIO_DT_SPEC_GET(DT_NODELABEL(red_led), gpios);
 const static struct gpio_dt_spec blue_led = GPIO_DT_SPEC_GET(DT_NODELABEL(blue_led), gpios);
 
 K_THREAD_STACK_DEFINE(motor_0_stack, MY_STACK_SIZE);
 K_THREAD_STACK_DEFINE(motor_1_stack, MY_STACK_SIZE);
+K_THREAD_STACK_DEFINE(buzzer_0_stack, MY_STACK_SIZE);
 struct k_work_q motor_0_work_queue;
 struct k_work_q motor_1_work_queue;
+struct k_work_q buzzer_0_work_queue;
 
 struct MOTOR_DEVICE {
     struct k_work work;
@@ -26,6 +28,7 @@ struct MOTOR_DEVICE {
 
 struct MOTOR_DEVICE motor_0_work;
 struct MOTOR_DEVICE motor_1_work;
+struct MOTOR_DEVICE buzzer_0_work;
 
 /*
     * initalize gpio pins as outputs,
@@ -36,6 +39,8 @@ void gpio_init(){
     printk("starting gpio init\n");   
     k_work_queue_init(&motor_0_work_queue);
     k_work_queue_init(&motor_1_work_queue);
+    k_work_queue_init(&buzzer_0_work_queue);
+
     //configure motors, buzzer and leds as output
     gpio_pin_configure_dt(&motor_0, GPIO_OUTPUT);
     gpio_pin_configure_dt(&motor_1, GPIO_OUTPUT);
@@ -48,8 +53,11 @@ void gpio_init(){
     gpio_pin_set_dt(&blue_led, 0);
 
     //set motor to off
-    gpio_pin_set_dt(&motor_0, 1);
-    gpio_pin_set_dt(&motor_1, 1);
+    gpio_pin_set_dt(&motor_0, 0);
+    gpio_pin_set_dt(&motor_1, 0);
+
+    //set speaker to off 
+    gpio_pin_set_dt(&buzzer_0, 0);
         
     k_work_queue_start(
 	&motor_0_work_queue,
@@ -66,9 +74,18 @@ void gpio_init(){
 	MY_PRIORITY,
 	NULL
     );
+
+    k_work_queue_start(
+	&buzzer_0_work_queue,
+	buzzer_0_stack,
+	K_THREAD_STACK_SIZEOF(buzzer_0_stack),
+	MY_PRIORITY,
+	NULL
+    );
      
     motor_0_work.pin = MOTOR_0;
     motor_1_work.pin = MOTOR_1;
+    buzzer_0_work.pin = BUZZER_0;
     //done
 }
 
@@ -133,50 +150,50 @@ void buzz_motor_async(struct k_work *item)
 
     switch (pattern) {
 	case MOTOR_SHORT_PULSE:
-	    gpio_set_pin(pin, 0);
-	    k_msleep(MOTOR_SHORT_PULSE_TIME);
 	    gpio_set_pin(pin, 1);
+	    k_msleep(MOTOR_SHORT_PULSE_TIME);
+	    gpio_set_pin(pin, 0);
 	    break;
 	case MOTOR_MED_PULSE:
-	    gpio_set_pin(pin, 0);
-	    k_msleep(MOTOR_MED_PULSE_TIME);
 	    gpio_set_pin(pin, 1);
+	    k_msleep(MOTOR_MED_PULSE_TIME);
+	    gpio_set_pin(pin, 0);
 	    break;
 	case MOTOR_DOUBLE_PULSE:
-	    gpio_set_pin(pin, 0);
-	    k_msleep(MOTOR_SHORT_PULSE_TIME);
 	    gpio_set_pin(pin, 1);
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);
 	    gpio_set_pin(pin, 0);
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);
 	    gpio_set_pin(pin, 1);
+	    k_msleep(MOTOR_SHORT_PULSE_TIME);
+	    gpio_set_pin(pin, 0);
 	    break;
 	case MOTOR_S_L_S_PULSE:
-	    gpio_set_pin(pin, 0);				// On, short time
+	    gpio_set_pin(pin, 1);				// On, short time
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);	
-	    gpio_set_pin(pin, 1);               // Off, short time
+	    gpio_set_pin(pin, 0);               // Off, short time
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);
-	    gpio_set_pin(pin, 0);				// On, mid time
+	    gpio_set_pin(pin, 1);				// On, mid time
 	    k_msleep(MOTOR_MED_PULSE_TIME);
-	    gpio_set_pin(pin, 1);				// Off, short time
+	    gpio_set_pin(pin, 0);				// Off, short time
 		k_msleep(MOTOR_SHORT_PULSE_TIME);
-		gpio_set_pin(pin, 0);				// On, short time
+		gpio_set_pin(pin, 1);				// On, short time
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);
-	    gpio_set_pin(pin, 1);				// Off
+	    gpio_set_pin(pin, 0);				// Off
 	    break;
     case MOTOR_LONG_PULSE:
-	    gpio_set_pin(pin, 0);				// On, long time
+	    gpio_set_pin(pin, 1);				// On, long time
 	    k_msleep(MOTOR_LONG_PULSE_TIME);	
-	    gpio_set_pin(pin, 1);				// Off
+	    gpio_set_pin(pin, 0);				// Off
 	    break;
     case MOTOR_DOUBLE_LONG_PULSE:
-	    gpio_set_pin(pin, 0);				// On, long time
+	    gpio_set_pin(pin, 1);				// On, long time
 	    k_msleep(MOTOR_LONG_PULSE_TIME);	
-	    gpio_set_pin(pin, 1);				// Off
+	    gpio_set_pin(pin, 0);				// Off
 	    k_msleep(MOTOR_LONG_PULSE_TIME);	
-        gpio_set_pin(pin, 0);				// On, long time
+        gpio_set_pin(pin, 1);				// On, long time
 	    k_msleep(MOTOR_LONG_PULSE_TIME);	
-	    gpio_set_pin(pin, 1);				// Off
+	    gpio_set_pin(pin, 0);				// Off
 	    break;
     }
 
@@ -205,6 +222,14 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
 	    }
 		motor_0_work.type = pattern;
 	    k_work_init(&motor_0_work.work, buzz_motor_async);
+
+	    //now set up speaker if it's not being used
+	    if(!k_work_busy_get(&buzzer_0_work.work)){
+		buzzer_0_work.type = pattern;
+		k_work_init(&buzzer_0_work.work, buzz_motor_async);
+		k_work_submit_to_queue(&buzzer_0_work_queue, &buzzer_0_work.work);
+	    }
+
 	    k_work_submit_to_queue(&motor_0_work_queue, &motor_0_work.work);
 	    break;
 	case MOTOR_1:
@@ -215,6 +240,14 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
 	    }
 		motor_1_work.type = pattern;
 	    k_work_init(&motor_1_work.work, buzz_motor_async);
+
+	    //now set up speaker if it's not being used
+	    if(!k_work_busy_get(&buzzer_0_work.work)){
+		buzzer_0_work.type = pattern;
+		k_work_init(&buzzer_0_work.work, buzz_motor_async);
+		k_work_submit_to_queue(&buzzer_0_work_queue, &buzzer_0_work.work);
+	    }
+
 	    k_work_submit_to_queue(&motor_1_work_queue, &motor_1_work.work);
 	    break;
 	case MOTOR_BOTH:
@@ -231,6 +264,14 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
 		motor_0_work.type = pattern;
 	    k_work_init(&motor_1_work.work, buzz_motor_async);
 	    k_work_init(&motor_0_work.work, buzz_motor_async);
+
+	    //now set up speaker if it's not being used
+	    if(!k_work_busy_get(&buzzer_0_work.work)){
+		buzzer_0_work.type = pattern;
+		k_work_init(&buzzer_0_work.work, buzz_motor_async);
+		k_work_submit_to_queue(&buzzer_0_work_queue, &buzzer_0_work.work);
+	    }
+
 	    k_work_submit_to_queue(&motor_1_work_queue, &motor_1_work.work);
 	    k_work_submit_to_queue(&motor_0_work_queue, &motor_0_work.work);
 	    break;

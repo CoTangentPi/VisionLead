@@ -35,7 +35,7 @@ static const struct bt_data adv_data[] = {
     BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
 
     // Set device name and length
-    BT_DATA(BT_DATA_NAME_COMPLETE, "Vision Lead", 11),
+    BT_DATA(BT_DATA_NAME_COMPLETE, "Vision-Lead", 11),
 
     // // Set the appearance of the device to Human Interface Device (HID)
     // // Note the device appearance is a little endian  16-bit value, so the two bytes are backwards
@@ -114,12 +114,12 @@ void decode_and_execute_command(const uint8_t *message, uint16_t len) {
 //=======================================================================
 /* UUIDs for the service and characteristics */
 static struct bt_uuid_128 my_service_uuid = BT_UUID_INIT_128(
-    BT_UUID_128_ENCODE(0xCB94A5B0, 0x1046, 0xB287, 0xD82E, 0x19CE7CA6001B));
-    // BT_UUID_128_ENCODE(0x12345678, 0x1234, 0x1234, 0x1234, 0x123456789abc));
+    //BT_UUID_128_ENCODE(0xCB94A5B0, 0x1046, 0xB287, 0xD82E, 0x19CE7CA6001B));
+     BT_UUID_128_ENCODE(0x12345678, 0x1234, 0x5678, 0x1234, 0x56789abcdef0));
 
 static struct bt_uuid_128 char_uuid = BT_UUID_INIT_128(
-    BT_UUID_128_ENCODE(0xFDE3A192, 0x8B1E, 0x9CE6, 0xC409, 0x3626A6E17310));
-    // BT_UUID_128_ENCODE(0xabcdef01, 0x1234, 0x1234, 0x1234, 0x123456789abc));
+    //BT_UUID_128_ENCODE(0xFDE3A192, 0x8B1E, 0x9CE6, 0xC409, 0x3626A6E17310));
+     BT_UUID_128_ENCODE(0x12345678, 0x1234, 0x5678, 0x1234, 0x56789abcdef1));
 
 /* Buffers for characteristic data */
 #define MAX_DATA_LEN 20

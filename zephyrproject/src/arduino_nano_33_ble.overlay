@@ -1,19 +1,24 @@
 / {
     pins {
 	compatible = "gpio-keys";
-	    motor_0: motor_0 {
-		gpios = <&gpio1 14  GPIO_ACTIVE_LOW>;
-		label = "motor 0";
-	    };
-	    motor_1: motor_1 {
-	       gpios = <&gpio1 15 GPIO_ACTIVE_LOW>;
-	       label = "motor 1";
-	    };
-	    buzzer_0: buzzer_0 {
-		gpios = <&gpio0 23 GPIO_ACTIVE_HIGH>;
-		label = "buzzer 0";
-	    };
+	motor_0: motor_0 {
+	    gpios = <&gpio1 14  GPIO_ACTIVE_LOW>;
+	    label = "motor 0";
+	};
+	motor_1: motor_1 {
+	   gpios = <&gpio1 15 GPIO_ACTIVE_LOW>;
+	   label = "motor 1";
+	};
+	    
     };
+
+    pwm_pins {
+	compatible = "pwm-leds";
+	buzzer_0: buzzer_0 {
+	    pwms = <&sw_pwm 0 PWM_USEC(2000) PWM_POLARITY_INVERTED>;
+	};
+    };
+    
 
     leds {
 	compatible = "gpio-leds";
@@ -28,4 +33,7 @@
     };
 };
 
-
+&sw_pwm {
+    status="okay";
+    channel-gpios = <&gpio0 23 PWM_POLARITY_INVERTED>;
+};

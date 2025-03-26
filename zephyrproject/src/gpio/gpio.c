@@ -2,6 +2,7 @@
 
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/pwm.h>
 #include <zephyr/logging/log.h>
 #include "zephyr/logging/log_core.h"
 #include <zephyr/kernel.h>
@@ -9,9 +10,13 @@
 //get motor 0, motor 1, and buzzer 0 devices from device tree
 const static struct gpio_dt_spec motor_0 = GPIO_DT_SPEC_GET(DT_NODELABEL(motor_0), gpios);
 const static struct gpio_dt_spec motor_1 = GPIO_DT_SPEC_GET(DT_NODELABEL(motor_1), gpios);
-const static struct gpio_dt_spec buzzer_0 = GPIO_DT_SPEC_GET(DT_NODELABEL(buzzer_0), gpios);
+//const static struct gpio_dt_spec buzzer_0 = GPIO_DT_SPEC_GET(DT_NODELABEL(buzzer_0), gpios);
 const static struct gpio_dt_spec red_led = GPIO_DT_SPEC_GET(DT_NODELABEL(red_led), gpios);
 const static struct gpio_dt_spec blue_led = GPIO_DT_SPEC_GET(DT_NODELABEL(blue_led), gpios);
+
+static const struct pwm_dt_spec buzzer_0_pwm = PWM_DT_SPEC_GET(DT_NODELABEL(buzzer_0));
+
+static uint32_t period;
 
 K_THREAD_STACK_DEFINE(motor_0_stack, MY_STACK_SIZE);
 K_THREAD_STACK_DEFINE(motor_1_stack, MY_STACK_SIZE);
@@ -44,7 +49,7 @@ void gpio_init(){
     //configure motors, buzzer and leds as output
     gpio_pin_configure_dt(&motor_0, GPIO_OUTPUT);
     gpio_pin_configure_dt(&motor_1, GPIO_OUTPUT);
-    gpio_pin_configure_dt(&buzzer_0, GPIO_OUTPUT);
+    //gpio_pin_configure_dt(&buzzer_0, GPIO_OUTPUT);
     gpio_pin_configure_dt(&red_led, GPIO_OUTPUT);
     gpio_pin_configure_dt(&blue_led, GPIO_OUTPUT);
 
@@ -57,7 +62,8 @@ void gpio_init(){
     gpio_pin_set_dt(&motor_1, 0);
 
     //set speaker to off 
-    gpio_pin_set_dt(&buzzer_0, 0);
+    //gpio_pin_set_dt(&buzzer_0, 0);
+    period = buzzer_0_pwm.period;
         
     k_work_queue_start(
 	&motor_0_work_queue,
@@ -124,7 +130,12 @@ int gpio_set_pin(PINS pin_to_set, int high_low){
 	    gpio_pin_set_dt(&motor_1, high_low);
 	    break;
 	case BUZZER_0:
-	    gpio_pin_set_dt(&buzzer_0, high_low);
+	    //gpio_pin_set_dt(&buzzer_0, high_low);
+	    if(high_low == 1){
+		pwm_set_dt(&buzzer_0_pwm, period, period / 2U);
+	    } else {
+		pwm_set_pulse_dt(&buzzer_0_pwm, 0);
+	    }
 	    break;   
 	case RED_LED:
 	    gpio_pin_set_dt(&red_led, high_low);

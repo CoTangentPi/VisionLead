@@ -16,8 +16,6 @@ const static struct gpio_dt_spec blue_led = GPIO_DT_SPEC_GET(DT_NODELABEL(blue_l
 
 static const struct pwm_dt_spec buzzer_0_pwm = PWM_DT_SPEC_GET(DT_NODELABEL(buzzer_0));
 
-static uint32_t period;
-
 K_THREAD_STACK_DEFINE(motor_0_stack, MY_STACK_SIZE);
 K_THREAD_STACK_DEFINE(motor_1_stack, MY_STACK_SIZE);
 K_THREAD_STACK_DEFINE(buzzer_0_stack, MY_STACK_SIZE);
@@ -63,7 +61,7 @@ void gpio_init(){
 
     //set speaker to off 
     //gpio_pin_set_dt(&buzzer_0, 0);
-    period = buzzer_0_pwm.period;
+    pwm_set_pulse_dt(&buzzer_0_pwm, 0);
         
     k_work_queue_start(
 	&motor_0_work_queue,
@@ -132,7 +130,7 @@ int gpio_set_pin(PINS pin_to_set, int high_low){
 	case BUZZER_0:
 	    //gpio_pin_set_dt(&buzzer_0, high_low);
 	    if(high_low == 1){
-		pwm_set_dt(&buzzer_0_pwm, period, period / 2U);
+		pwm_set_dt(&buzzer_0_pwm, buzzer_0_pwm.period, buzzer_0_pwm.period / 2U);
 	    } else {
 		pwm_set_pulse_dt(&buzzer_0_pwm, 0);
 	    }

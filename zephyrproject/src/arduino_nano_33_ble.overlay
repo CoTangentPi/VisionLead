@@ -35,5 +35,5 @@
 
 &sw_pwm {
     status="okay";
-    channel-gpios = <&gpio0 23 PWM_POLARITY_INVERTED>;
+    channel-gpios = <&gpio0 27 PWM_POLARITY_INVERTED>;
 };

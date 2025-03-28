@@ -35,15 +35,12 @@ static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 
 void main(void)
 {
-    //LOG_INF("Starting main application");
 
-	LOG_INF("Begain GPIO and BLE initialization");
+    LOG_INF("Begain GPIO and BLE initialization");
 
     gpio_init();
     ble_init();
     
-    //gpio_set_pin(BUZZER_0, 1);
-
     while(true){
 	k_msleep(1000);
     } 

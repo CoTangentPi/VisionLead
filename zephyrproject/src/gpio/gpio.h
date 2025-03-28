@@ -45,6 +45,13 @@ typedef enum {
     MOTOR_DOUBLE_LONG_PULSE //hold for extened period
 } PULSE_TYPE;
 
+typedef enum {
+    LEFT = 500,
+    RIGHT = 1500,
+    BOTH = 4000,
+    NONE = 0
+} BUZZER_TONE;
+
 /*
     * initalize gpio pins as outputs,
     * allows the motors, buzzer, and two leds
@@ -55,7 +62,7 @@ void gpio_init(void);
     * set value being ouptut on GPIO PINS
     * returns 1 on sucess, -1 on failure
 */
-int gpio_set_pin(PINS pin_to_set, int high_low);
+int gpio_set_pin(PINS pin_to_set, int high_low, BUZZER_TONE tone);
 /*
     * drive one of the two motors for a 
     * set amount of time, using one of three patterns

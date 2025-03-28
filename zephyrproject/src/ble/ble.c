@@ -75,7 +75,7 @@ void decode_and_execute_command(const uint8_t *message, uint16_t len) {
                 break;
             case 0x06:
                 // 0x00 06 indicate destination reached
-                pulse_motor(MOTOR_BOTH, MOTOR_DOUBLE_LONG_PULSE);
+                pulse_motor(MOTOR_BOTH, MOTOR_S_L_S_PULSE);
                 break;
             default:
                 LOG_WRN("Unknown command: %x", message);
@@ -94,10 +94,10 @@ void decode_and_execute_command(const uint8_t *message, uint16_t len) {
 	case 0x04:
             switch (message[1]) {
                 case 0x01:
-                    gpio_set_pin(RED_LED, 1);
+                    gpio_set_pin(RED_LED, 1, NONE);
                     break;
                 case 0x02:
-                    gpio_set_pin(RED_LED, 0);
+                    gpio_set_pin(RED_LED, 0, NONE);
                     break;
                 default:
                     LOG_WRN("Unknown other command: %x", message[1]);
@@ -173,7 +173,7 @@ static void connected(struct bt_conn *conn, uint8_t err)
         LOG_INF("Connected");
     }
     // Turn on the blue LED to indicate connection
-    gpio_set_pin(BLUE_LED, 1);
+    gpio_set_pin(BLUE_LED, 1, NONE);
 }
 
 static void disconnected(struct bt_conn *conn, uint8_t reason)
@@ -182,7 +182,7 @@ static void disconnected(struct bt_conn *conn, uint8_t reason)
     LOG_INF("Disconnected (reason %u)", reason);
 
     // Turn off the blue LED to indicate disconnection
-    gpio_set_pin(BLUE_LED, 0);
+    gpio_set_pin(BLUE_LED, 0, NONE);
 }
 
 // Define the connection callback structure

@@ -28,6 +28,7 @@ struct MOTOR_DEVICE {
     struct k_work work;
     PINS pin;
     PULSE_TYPE type;
+    BUZZER_TONE tone;
 };
 
 struct MOTOR_DEVICE motor_0_work;
@@ -91,6 +92,7 @@ void gpio_init(){
     motor_0_work.pin = MOTOR_0;
     motor_1_work.pin = MOTOR_1;
     buzzer_0_work.pin = BUZZER_0;
+    buzzer_0_work.tone = BOTH;
     //done
 }
 
@@ -100,7 +102,7 @@ void gpio_init(){
     * returns 1 on sucess, -1 on failure
     *
 */
-int gpio_set_pin(PINS pin_to_set, int high_low){
+int gpio_set_pin(PINS pin_to_set, int high_low, BUZZER_TONE tone){
 
     //check if inputs are valid values
     if(
@@ -132,7 +134,7 @@ int gpio_set_pin(PINS pin_to_set, int high_low){
 	    //gpio_pin_set_dt(&buzzer_0, high_low);
 	    printk("buzzing the buzzer!");
 	    if(high_low == 1){
-		pwm_set_dt(&buzzer_0_pwm, PWM_HZ(5000), PWM_HZ(5000) / 2U);
+		pwm_set_dt(&buzzer_0_pwm, PWM_HZ(tone), PWM_HZ(tone) / 2U);
 	    } else {
 		pwm_set_pulse_dt(&buzzer_0_pwm, 0);
 	    }
@@ -157,54 +159,55 @@ void buzz_motor_async(struct k_work *item)
 
     PULSE_TYPE pattern = device->type;
     PINS pin = device->pin;
+    BUZZER_TONE tone = device->tone;
 
 
     switch (pattern) {
 	case MOTOR_SHORT_PULSE:
-	    gpio_set_pin(pin, 1);
+	    gpio_set_pin(pin, 1, tone);
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);
-	    gpio_set_pin(pin, 0);
+	    gpio_set_pin(pin, 0, tone);
 	    break;
 	case MOTOR_MED_PULSE:
-	    gpio_set_pin(pin, 1);
+	    gpio_set_pin(pin, 1, tone);
 	    k_msleep(MOTOR_MED_PULSE_TIME);
-	    gpio_set_pin(pin, 0);
+	    gpio_set_pin(pin, 0, tone);
 	    break;
 	case MOTOR_DOUBLE_PULSE:
-	    gpio_set_pin(pin, 1);
+	    gpio_set_pin(pin, 1, tone);
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);
-	    gpio_set_pin(pin, 0);
+	    gpio_set_pin(pin, 0, tone);
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);
-	    gpio_set_pin(pin, 1);
+	    gpio_set_pin(pin, 1, tone);
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);
-	    gpio_set_pin(pin, 0);
+	    gpio_set_pin(pin, 0, tone);
 	    break;
 	case MOTOR_S_L_S_PULSE:
-	    gpio_set_pin(pin, 1);				// On, short time
+	    gpio_set_pin(pin, 1, tone);				// On, short time
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);	
-	    gpio_set_pin(pin, 0);               // Off, short time
+	    gpio_set_pin(pin, 0, tone);               // Off, short time
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);
-	    gpio_set_pin(pin, 1);				// On, mid time
+	    gpio_set_pin(pin, 1, tone);				// On, mid time
 	    k_msleep(MOTOR_MED_PULSE_TIME);
-	    gpio_set_pin(pin, 0);				// Off, short time
-		k_msleep(MOTOR_SHORT_PULSE_TIME);
-		gpio_set_pin(pin, 1);				// On, short time
+	    gpio_set_pin(pin, 0, tone);				// Off, short time
 	    k_msleep(MOTOR_SHORT_PULSE_TIME);
-	    gpio_set_pin(pin, 0);				// Off
+	    gpio_set_pin(pin, 1, tone);				// On, short time
+	    k_msleep(MOTOR_SHORT_PULSE_TIME);
+	    gpio_set_pin(pin, 0, tone);				// Off
 	    break;
     case MOTOR_LONG_PULSE:
-	    gpio_set_pin(pin, 1);				// On, long time
+	    gpio_set_pin(pin, 1, tone);				// On, long time
 	    k_msleep(MOTOR_LONG_PULSE_TIME);	
-	    gpio_set_pin(pin, 0);				// Off
+	    gpio_set_pin(pin, 0, tone);				// Off
 	    break;
     case MOTOR_DOUBLE_LONG_PULSE:
-	    gpio_set_pin(pin, 1);				// On, long time
+	    gpio_set_pin(pin, 1, tone);				// On, long time
 	    k_msleep(MOTOR_LONG_PULSE_TIME);	
-	    gpio_set_pin(pin, 0);				// Off
+	    gpio_set_pin(pin, 0, tone);				// Off
 	    k_msleep(MOTOR_LONG_PULSE_TIME);	
-        gpio_set_pin(pin, 1);				// On, long time
+        gpio_set_pin(pin, 1, tone);				// On, long time
 	    k_msleep(MOTOR_LONG_PULSE_TIME);	
-	    gpio_set_pin(pin, 0);				// Off
+	    gpio_set_pin(pin, 0, tone);				// Off
 	    break;
     }
 
@@ -216,7 +219,7 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
     if(
         motor_pin != MOTOR_0 && 
         motor_pin != MOTOR_1 &&
-	    motor_pin != MOTOR_BOTH
+	motor_pin != MOTOR_BOTH
     ){
         return GPIO_PIN_SET_ERROR;
     }
@@ -227,16 +230,18 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
     switch(motor_pin) {
 	case MOTOR_0:
 	    if(k_work_busy_get(&motor_0_work.work)){
-            //motor 0 is currently busy
-            printk("MOTOR 0 BUSY!\n");
-            return GPIO_PIN_SET_ERROR;
+		//motor 0 is currently busy
+		printk("MOTOR 0 BUSY!\n");
+		return GPIO_PIN_SET_ERROR;
 	    }
-		motor_0_work.type = pattern;
+	    
+	    motor_0_work.type = pattern;
 	    k_work_init(&motor_0_work.work, buzz_motor_async);
 
 	    //now set up speaker if it's not being used
 	    if(!k_work_busy_get(&buzzer_0_work.work)){
 		buzzer_0_work.type = pattern;
+		buzzer_0_work.tone = LEFT;
 		k_work_init(&buzzer_0_work.work, buzz_motor_async);
 		k_work_submit_to_queue(&buzzer_0_work_queue, &buzzer_0_work.work);
 	    }
@@ -245,16 +250,18 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
 	    break;
 	case MOTOR_1:
 	    if(k_work_busy_get(&motor_1_work.work)){
-            //motor 1 is currently busy
-            printk("MOTOR 1 BUSY!\n");
-            return GPIO_PIN_SET_ERROR;
+		//motor 1 is currently busy
+		printk("MOTOR 1 BUSY!\n");
+		return GPIO_PIN_SET_ERROR;
 	    }
-		motor_1_work.type = pattern;
+	    
+	    motor_1_work.type = pattern;
 	    k_work_init(&motor_1_work.work, buzz_motor_async);
 
 	    //now set up speaker if it's not being used
 	    if(!k_work_busy_get(&buzzer_0_work.work)){
 		buzzer_0_work.type = pattern;
+		buzzer_0_work.tone = RIGHT;
 		k_work_init(&buzzer_0_work.work, buzz_motor_async);
 		k_work_submit_to_queue(&buzzer_0_work_queue, &buzzer_0_work.work);
 	    }
@@ -269,17 +276,19 @@ int pulse_motor(PINS motor_pin, PULSE_TYPE pattern){
 		||
 		k_work_busy_get(&buzzer_0_work.work)
 	    ){
-            //motor 1 is currently busy
-            printk("BOTH MOTORS BUSY!\n");
-            return GPIO_PIN_SET_ERROR;
+		//motor 1 is currently busy
+		printk("BOTH MOTORS BUSY!\n");
+		return GPIO_PIN_SET_ERROR;
 	    }
-		motor_1_work.type = pattern;
-		motor_0_work.type = pattern;
+		
+	    motor_1_work.type = pattern;
+	    motor_0_work.type = pattern;
 	    k_work_init(&motor_1_work.work, buzz_motor_async);
 	    k_work_init(&motor_0_work.work, buzz_motor_async);
 
 	    //now set up speaker (we know it's not being used already)
 	    buzzer_0_work.type = pattern;
+	    buzzer_0_work.tone = BOTH;
 	    k_work_init(&buzzer_0_work.work, buzz_motor_async);
 
 	    k_work_submit_to_queue(&motor_1_work_queue, &motor_1_work.work);

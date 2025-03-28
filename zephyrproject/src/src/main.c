@@ -41,6 +41,8 @@ void main(void)
 
     gpio_init();
     ble_init();
+    
+    //gpio_set_pin(BUZZER_0, 1);
 
     while(true){
 	k_msleep(1000);

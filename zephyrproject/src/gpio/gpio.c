@@ -4,6 +4,7 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/pwm.h>
 #include <zephyr/logging/log.h>
+#include "zephyr/dt-bindings/pwm/pwm.h"
 #include "zephyr/logging/log_core.h"
 #include <zephyr/kernel.h>
  
@@ -131,7 +132,7 @@ int gpio_set_pin(PINS pin_to_set, int high_low){
 	    //gpio_pin_set_dt(&buzzer_0, high_low);
 	    printk("buzzing the buzzer!");
 	    if(high_low == 1){
-		pwm_set_dt(&buzzer_0_pwm, buzzer_0_pwm.period, buzzer_0_pwm.period / 2U);
+		pwm_set_dt(&buzzer_0_pwm, PWM_HZ(5000), PWM_HZ(5000) / 2U);
 	    } else {
 		pwm_set_pulse_dt(&buzzer_0_pwm, 0);
 	    }

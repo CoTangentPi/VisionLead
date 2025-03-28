@@ -2,7 +2,7 @@ import pytest
 import pytest_asyncio
 from bleak import BleakScanner, BleakClient
 
-DEVICE_NAME = "Vision Lead"
+DEVICE_NAME = "Vision-Lead"
 
 @pytest_asyncio.fixture(scope="session")
 async def ble_device_address():

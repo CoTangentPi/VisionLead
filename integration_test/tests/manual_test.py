@@ -3,8 +3,11 @@ import asyncio
 from bleak import BleakScanner, BleakClient
 
 # UUIDs for services and characteristics
-SERVICE_UUID = "cb94a5b0-1046-b287-d82e-19ce7ca6001b"
-CHARACTERISTIC_UUID = "fde3a192-8b1e-9ce6-c409-3626a6e17310"
+# SERVICE_UUID = "cb94a5b0-1046-b287-d82e-19ce7ca6001b"
+# CHARACTERISTIC_UUID = "fde3a192-8b1e-9ce6-c409-3626a6e17310"
+
+SERVICE_UUID = "12345678-1234-5678-1234-56789abcdef0"
+CHARACTERISTIC_UUID = "12345678-1234-5678-1234-56789abcdef1"
 
 # Motor control values
 LEFT_MOTOR = 0x01

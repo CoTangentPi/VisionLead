@@ -55,15 +55,15 @@ void decode_and_execute_command(const uint8_t *message, uint16_t len) {
             {
             case 0x01:
                 // 0x00 01 indicate turn left
-                pulse_motor(MOTOR_0, MOTOR_DOUBLE_PULSE);
+                pulse_motor(MOTOR_0, MOTOR_SHORT_BURST);
                 break;
             case 0x02:
                 // 0x00 02 indicate turn right
-                pulse_motor(MOTOR_1, MOTOR_DOUBLE_PULSE);
+                pulse_motor(MOTOR_1, MOTOR_SHORT_BURST);
                 break;
             case 0x03:
                 // 0x00 03 indicate go straight
-                pulse_motor(MOTOR_BOTH, MOTOR_DOUBLE_PULSE);
+                pulse_motor(MOTOR_BOTH, MOTOR_MED_PULSE);
                 break;
             case 0x04:
                 // 0x00 04 indicate stop
@@ -71,7 +71,7 @@ void decode_and_execute_command(const uint8_t *message, uint16_t len) {
                 break;
             case 0x05:
                 // 0x00 05 indicate go back
-                pulse_motor(MOTOR_BOTH, MOTOR_DOUBLE_LONG_PULSE);
+                pulse_motor(MOTOR_BOTH, MOTOR_DOUBLE_PULSE);
                 break;
             case 0x06:
                 // 0x00 06 indicate destination reached

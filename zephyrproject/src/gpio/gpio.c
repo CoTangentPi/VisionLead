@@ -209,9 +209,15 @@ void buzz_motor_async(struct k_work *item)
 	    k_msleep(MOTOR_LONG_PULSE_TIME);	
 	    gpio_set_pin(pin, 0, tone);				// Off
 	    break;
-    }
-
-
+	case MOTOR_SHORT_BURST:
+		for (int i = 0; i < 3; i++){
+		    gpio_set_pin(pin, 1, tone);				// On, short time
+		    k_msleep(MOTOR_SHORT_PULSE_TIME);	
+		    gpio_set_pin(pin, 0, tone);				// Off
+		    k_msleep(MOTOR_SHORT_PULSE_TIME);
+		}
+	    break;
+	}
 }
 
 

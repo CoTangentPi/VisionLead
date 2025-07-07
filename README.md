@@ -2,6 +2,8 @@
 
 This project is for Bluetooth Low Energy (BLE) enabled embedded application built on the Zephyr RTOS, designed for the Arduino Nano 33 BLE board and adaptable to any nRF52 series microcontroller. This project offers BLE wireless connectivity with custom protocol, alongside GPIO control for audio components including buzzers and speakers.
 
+> **Note:** This repository focuses exclusively on the embedded system. For the complete VisionLead project overview, please visit [chachi.cc](https://chachi.cc/projects/visionlead).
+
 ## Features
 
 - **Bluetooth Low Energy (BLE)**: Full BLE stack implementation with custom advertising and GATT services

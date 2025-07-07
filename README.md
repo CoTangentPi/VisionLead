@@ -35,7 +35,9 @@ This demonstration showcases the core BLE communication and GPIO control functio
 
 **Note**: The demo uses manual BLE command transmission for easier demonstration. In production, these commands would be automatically generated based on GPS navigation data from Google Maps API integration.
 
+### Video Demo
 
+https://github.com/user-attachments/assets/560f7868-09c8-4e30-9f33-99de8105bef5
 
 ## Project Structure
 

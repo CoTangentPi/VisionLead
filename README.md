@@ -119,10 +119,3 @@ This project is a University of Calgary Software and Electrical Engineering caps
 - **Laura Zhao** - Electrical and Hardware
 - **Bruce Zhao** - Electrical and Hardware
 
-
----
-
-For questions or support regarding this project, please contact:
-
-Chachi Han - contact@chachi.cc
-
